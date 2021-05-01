@@ -1,6 +1,41 @@
 # ExUssd
 
-**TODO: Add description**
+Example New USSD API
+
+```elixir
+  defmodule ProductAHandler do
+    @behaviour ExUssd.Handler
+    def callback(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "selected product a")
+    end
+  end
+
+  defmodule ProductBHandler do
+    @behaviour ExUssd.Handler
+    def callback(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "selected product b")
+    end
+  end
+
+  defmodule ProductCHandler do
+    @behaviour ExUssd.Handler
+    def callback(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "selected product c")
+    end
+  end
+
+  defmodule MyHomeHandler do
+    @behaviour ExUssd.Handler
+    def callback(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "Welcome")
+    end
+  end
+
+  ExUssd.new(name: "Home", handler: MyHomeHandler)
+    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+    |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
+```
 
 ## Installation
 
