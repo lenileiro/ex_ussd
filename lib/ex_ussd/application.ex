@@ -10,7 +10,8 @@ defmodule ExUssd.Application do
     children = [
       # Starts a worker by calling: ExUssd.Worker.start_link(arg)
       # {ExUssd.Worker, arg}
-      {Registry, keys: :unique, name: :session_registry}
+      {Registry, keys: :unique, name: :session_registry},
+      {ExUssd.NavGraph, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
