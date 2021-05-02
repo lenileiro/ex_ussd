@@ -14,6 +14,6 @@ defmodule ExUssd.Utils do
         %ExUssd{} = menu,
         api_parameters
       ) do
-    menu.callback.(api_parameters)
+    menu.handler.callback(menu, api_parameters)
   end
 end

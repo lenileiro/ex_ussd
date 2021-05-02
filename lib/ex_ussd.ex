@@ -51,11 +51,8 @@ defmodule ExUssd do
 
   alias __MODULE__
 
-  @typep callback :: (ExUssd.t(), map() -> ExUssd.t())
-
   @type t :: %__MODULE__{
           name: String.t(),
-          callback: callback,
           handler: fun(),
           title: {String.t(), boolean()},
           menu_list: {[%__MODULE__{}], boolean()},
@@ -66,7 +63,7 @@ defmodule ExUssd do
           split: {integer(), boolean()},
           should_close: {boolean(), boolean()},
           delimiter_style: {String.t(), boolean()},
-          parent: {%__MODULE__{}, boolean()},
+          parent: %__MODULE__{},
           validation_menu: {%__MODULE__{}, boolean()},
           data: map(),
           id: String.t(),
@@ -75,7 +72,6 @@ defmodule ExUssd do
 
   # @derive {Inspect, only: [:name, :menu_list, :title]}
   defstruct name: nil,
-            callback: nil,
             handler: nil,
             title: {nil, false},
             menu_list: {[], false},
@@ -88,7 +84,7 @@ defmodule ExUssd do
             split: {7, false},
             should_close: {false, false},
             delimiter_style: {":", false},
-            parent: {nil, false},
+            parent: nil,
             validation_menu: {nil, false},
             data: nil,
             id: nil,

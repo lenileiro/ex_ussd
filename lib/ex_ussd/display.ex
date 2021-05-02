@@ -1,6 +1,6 @@
 defmodule ExUssd.Display do
   def new(fields) when is_list(fields),
-    do: new(Enum.into(fields, %{data: Keyword.get(fields, :data)}))
+    do: new(Enum.into(fields, %{}))
 
   def new(%{
         menu: menu,
@@ -16,18 +16,20 @@ defmodule ExUssd.Display do
 
   defp builder(
          %ExUssd{
-           title: title,
-           error: error,
-           split: split,
-           menu_list: menu_list,
-           should_close: should_close,
-           delimiter_style: delimiter_style,
-           next: %{name: next_name, input_match: next, display_style: next_display_style},
-           previous: %{
-             name: previous_name,
-             input_match: previous,
-             display_style: previous_display_style
-           }
+           delimiter_style: {delimiter_style, _},
+           error: {error, _},
+           menu_list: {menu_list, _},
+           next: {%{display_style: next_display_style, input_match: next, name: next_name}, _},
+           previous:
+             {%{
+                display_style: previous_display_style,
+                input_match: previous,
+                name: previous_name
+              }, _},
+           should_close: {should_close, _},
+           split: {split, _},
+           success: {false, _},
+           title: {title, _}
          } = menu,
          routes,
          _api_parameters

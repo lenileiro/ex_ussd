@@ -31,10 +31,21 @@ Example New USSD API
     end
   end
 
+  defmodule ProductPriceHandler do
+    @behaviour ExUssd.Handler
+    def callback(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "Price")
+    end
+  end
+
+
+  product = ExUssd.new(name: "Product C", handler: ProductCHandler)
+   |> ExUssd.add(ExUssd.new(name: "Price", handler: ProductPriceHandler), :single)
+
   ExUssd.new(name: "Home", handler: MyHomeHandler)
-    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
-    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
-    |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
+    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler), :multi)
+    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler), :multi)
+    |> ExUssd.add(product, :multi)
 ```
 
 ## Installation

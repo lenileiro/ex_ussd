@@ -1,5 +1,5 @@
 defmodule ExUssd.Op do
-  alias ExUssd.{Utils, NavGraph, Registry, Ops, Display, Route}
+  alias ExUssd.{Utils, Registry, Ops, Display, Route}
 
   @allowed_fields [:title, :next, :previous, :should_close, :split, :delimiter_style]
 
@@ -11,20 +11,14 @@ defmodule ExUssd.Op do
       name: name,
       handler: handler,
       id: Utils.generate_id(),
-      callback: fn api_parameters ->
-        menu = struct!(ExUssd, name: name, handler: handler, data: data)
-        menu.handler.callback(menu, api_parameters)
-      end
+      data: data
     }
 
-    NavGraph.add(menu)
     menu
   end
 
   def add(%ExUssd{} = menu, %ExUssd{} = child, :multi) do
     {menu_list, _state} = Map.get(menu, :menu_list, {[], true})
-
-    NavGraph.path(menu, Map.merge(child, %{navigate: :multi}))
 
     menu
     |> Map.put(
@@ -34,8 +28,6 @@ defmodule ExUssd.Op do
   end
 
   def add(%ExUssd{} = menu, %ExUssd{} = child, :single) do
-    NavGraph.path(menu, Map.merge(child, %{navigate: :single}))
-
     menu
     |> Map.put(
       :validation_menu,
@@ -69,21 +61,25 @@ defmodule ExUssd.Op do
 
     route = Route.get_route(%{text: text, service_code: service_code})
 
-    current_menu =
+    {_, current_menu} =
       case Registry.lookup(session_id) do
         {:error, :not_found} ->
           Registry.start(session_id)
-          Ops.circle(Enum.reverse(route), menu, api_parameters)
+          Registry.add(session_id, route)
+          current_menu = Ops.circle(Enum.reverse(route), menu, api_parameters)
+          Registry.set_current(session_id, current_menu)
+          current_menu
 
         {:ok, _pid} ->
-          menu = Registry.get_current(session_id)
-          {_, current_menu} = Ops.navigate(route, menu, api_parameters)
+          {_, current_menu} = Registry.get_current(session_id)
+          current_menu = Ops.circle(route, current_menu, api_parameters, menu)
+          Registry.set_current(session_id, current_menu)
           current_menu
       end
 
     Display.new(
       menu: current_menu,
-      route: Registry.get(session_id),
+      routes: Registry.get(session_id),
       api_parameters: api_parameters
     )
   end
@@ -111,5 +107,16 @@ defmodule ExUssd.Op do
       }) do
     raise RuntimeError,
       message: "'service_code' not found in api_parameters #{inspect(api_parameters)}"
+  end
+
+  def goto(%{
+        api_parameters: api_parameters,
+        menu: _menu
+      }) do
+    raise RuntimeError,
+      message:
+        "'text', 'service_code', 'session_id',  not found in api_parameters #{
+          inspect(api_parameters)
+        }"
   end
 end

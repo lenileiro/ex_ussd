@@ -1,5 +1,3 @@
-import ExUssd.NavGraph
- 
 defmodule ProductAHandler do
     @behaviour ExUssd.Handler
     def callback(menu, _api_parameters) do
@@ -25,5 +23,12 @@ defmodule ProductAHandler do
     @behaviour ExUssd.Handler
     def callback(menu, _api_parameters) do
       menu |> ExUssd.set(title: "Welcome")
+    end
+  end
+
+  defmodule ProductPriceHandler do
+    @behaviour ExUssd.Handler
+    def callback(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "Price")
     end
   end

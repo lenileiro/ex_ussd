@@ -4,11 +4,11 @@ defmodule ExUssd.Route do
   ## Parameters
   * `%{text: text, service_code: service_code}`
   ## Examples
-      iex> ExUssd.Routes.get_route(%{text: "*544#", service_code: "*544#"})
+      iex> ExUssd.Route.get_route(%{text: "*544#", service_code: "*544#"})
       [%{depth: 1, value: "555"}]
-      iex> ExUssd.Routes.get_route(%{text: "*544*2*3#", service_code: "*544#"})
+      iex> ExUssd.Route.get_route(%{text: "*544*2*3#", service_code: "*544#"})
       [%{depth: 1, value: "3"}, %{depth: 1, value: "2"}, %{depth: 1, value: "555"}]
-      iex> ExUssd.Routes.get_route(%{text: "2", service_code: "*544#"})
+      iex> ExUssd.Route.get_route(%{text: "2", service_code: "*544#"})
       %{depth: 1, value: "2"}
   """
 
