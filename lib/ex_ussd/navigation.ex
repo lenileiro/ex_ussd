@@ -25,8 +25,7 @@ defmodule ExUssd.Navigation do
 
     case depth do
       128_977_754_852_657_127_041_634_246_588 ->
-        route = Registry.previous(session_id) |> List.first()
-        %{depth: depth} = route
+        %{depth: depth} = Registry.previous(session_id) |> List.first()
 
         case depth do
           1 -> menu.parent.()
@@ -42,25 +41,24 @@ defmodule ExUssd.Navigation do
         Registry.get_home(session_id)
 
       depth ->
-        next_menu(depth, menus, validation_menu, api_parameters, menu)
+        next_menu(depth, menus, validation_menu, api_parameters, menu, route)
     end
   end
 
-  defp next_menu(depth, menus, nil, %{session_id: session_id} = api_parameters, menu, routes)
+  defp next_menu(depth, menus, nil, %{session_id: session_id} = api_parameters, menu, route)
        when is_integer(depth) do
     case Enum.at(menus, depth - 1) do
       nil ->
         {:error, Map.put(menu, :error, Map.get(menu, :default_error))}
 
-      _ ->
-        Registry.add(session_id, routes)
-        child_menu = Enum.at(menu_list, depth - 1)
+      child_menu ->
+        Registry.add(session_id, route)
         {:ok, Utils.invoke_callback(child_menu, api_parameters)}
     end
   end
 
-  defp next_menu(@default_value, [], validation_menu, api_parameters, menu(routes)) do
-    get_validation_menu(validation_menu, api_parameters, menu, routes)
+  defp next_menu(_depth, [], validation_menu, api_parameters, menu, route) do
+    get_validation_menu(validation_menu, api_parameters, menu, route)
   end
 
   defp next_menu(
@@ -69,28 +67,33 @@ defmodule ExUssd.Navigation do
          validation_menu,
          %{session_id: session_id} = api_parameters,
          menu,
-         routes
+         route
        )
        when is_integer(depth) do
     case Enum.at(menus, depth - 1) do
       nil ->
-        get_validation_menu(validation_menu, api_parameters, menu, routes)
+        get_validation_menu(validation_menu, api_parameters, menu, route)
 
-      _ ->
-        Registry.add(session_id, routes)
-        child_menu = Enum.at(menu_list, depth - 1)
+      child_menu ->
+        Registry.add(session_id, route)
         {:ok, Utils.invoke_callback(child_menu, api_parameters)}
     end
   end
 
-  defp get_validation_menu(validation_menu, api_parameters, menu, routes) do
-    current_menu = Utils.invoke_callback(validation_menu, api_parameters)
+  defp get_validation_menu(
+         validation_menu,
+         %{session_id: session_id} = api_parameters,
+         menu,
+         route
+       ) do
+    current_menu =
+      Utils.invoke_callback(validation_menu, Map.put(api_parameters, :text, route.value))
 
     %{error: error} = current_menu
 
     case error do
       nil ->
-        Registry.add(session_id, state)
+        Registry.add(session_id, route)
         {:ok, current_menu}
 
       _ ->
@@ -110,7 +113,7 @@ defmodule ExUssd.Navigation do
       previous: %{input_match: previous}
     } = menu
 
-    case text do
+    case input_value do
       v when v == next ->
         605_356_150_351_840_375_921_999_017_933
 
@@ -118,10 +121,7 @@ defmodule ExUssd.Navigation do
         128_977_754_852_657_127_041_634_246_588
 
       _ ->
-        case Integer.parse(value) do
-          {v, _} -> v
-          :error -> value
-        end
+        value
     end
   end
 

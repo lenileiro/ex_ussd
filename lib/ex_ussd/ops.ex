@@ -14,7 +14,7 @@ defmodule ExUssd.Ops do
     home
   end
 
-  def circle([%{depth: 1, value: "555"} | tail] = route, %ExUssd{} = menu, api_parameters) do
+  def circle([%{depth: 1, value: "555"} | tail], %ExUssd{} = menu, api_parameters) do
     home = circle([%{depth: 1, value: "555"}], menu, api_parameters)
     circle(tail, home, api_parameters)
   end
@@ -27,18 +27,17 @@ defmodule ExUssd.Ops do
     end
   end
 
-  def circle([], %ExUssd{} = menu, api_parameters) do
+  def circle([], %ExUssd{} = menu, _api_parameters) do
     menu
   end
 
   def navigate(%{} = route, %ExUssd{} = menu, %{session_id: session_id} = api_parameters) do
-    menu = Registry.get_current(session_id)
     children = Graph.out_neighbors(NavGraph.all(), menu)
 
     Navigation.navigate(menu, children, api_parameters, route)
-    |> fn {_, current_menu} = response ->
-      Registry.set_current(session_id, current_menu)
-      response
-    end
+    |> (fn {_, current_menu} = response ->
+          Registry.set_current(session_id, current_menu)
+          response
+        end).()
   end
 end

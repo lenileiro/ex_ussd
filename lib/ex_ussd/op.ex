@@ -1,5 +1,5 @@
 defmodule ExUssd.Op do
-  alias ExUssd.{Utils, NavGraph, Registry, Route, Ops, Display}
+  alias ExUssd.{Utils, NavGraph, Registry, Ops, Display, Route}
 
   @allowed_fields [:title, :next, :previous, :should_close, :split, :delimiter_style]
 
@@ -57,7 +57,7 @@ defmodule ExUssd.Op do
   end
 
   def goto(fields) when is_list(fields),
-    do: new(Enum.into(fields, %{}))
+    do: goto(Enum.into(fields, %{}))
 
   def goto(%{
         api_parameters:
@@ -67,7 +67,7 @@ defmodule ExUssd.Op do
       }) do
     api_parameters = for {key, val} <- api_parameters, into: %{}, do: {String.to_atom(key), val}
 
-    route = Routes.get_route(%{text: text, service_code: service_code})
+    route = Route.get_route(%{text: text, service_code: service_code})
 
     current_menu =
       case Registry.lookup(session_id) do
@@ -75,7 +75,7 @@ defmodule ExUssd.Op do
           Registry.start(session_id)
           Ops.circle(Enum.reverse(route), menu, api_parameters)
 
-        {:ok, pid} ->
+        {:ok, _pid} ->
           menu = Registry.get_current(session_id)
           {_, current_menu} = Ops.navigate(route, menu, api_parameters)
           current_menu
@@ -86,5 +86,30 @@ defmodule ExUssd.Op do
       route: Registry.get(session_id),
       api_parameters: api_parameters
     )
+  end
+
+  def goto(%{
+        api_parameters:
+          %{"session_id" => _session_id, "service_code" => _service_code} = api_parameters,
+        menu: _menu
+      }) do
+    raise RuntimeError,
+      message: "'text' not found in api_parameters #{inspect(api_parameters)}"
+  end
+
+  def goto(%{
+        api_parameters: %{"text" => _text, "service_code" => _service_code} = api_parameters,
+        menu: _menu
+      }) do
+    raise RuntimeError,
+      message: "'session_id' not found in api_parameters #{inspect(api_parameters)}"
+  end
+
+  def goto(%{
+        api_parameters: %{"text" => _text, "session_id" => _session_id} = api_parameters,
+        menu: _menu
+      }) do
+    raise RuntimeError,
+      message: "'service_code' not found in api_parameters #{inspect(api_parameters)}"
   end
 end

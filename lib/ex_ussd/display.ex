@@ -2,12 +2,16 @@ defmodule ExUssd.Display do
   def new(fields) when is_list(fields),
     do: new(Enum.into(fields, %{data: Keyword.get(fields, :data)}))
 
-  def new(%{menu: menu, route: route, api_parameters: %{session_id: session_id} = api_parameters}) do
-    builder(menu, routes, api_parameters, session_id)
+  def new(%{
+        menu: menu,
+        routes: routes,
+        api_parameters: api_parameters
+      }) do
+    builder(menu, routes, api_parameters)
   end
 
-  def new(%{menu: menu, route: route}) do
-    builder(menu, routes, Map.new(), "")
+  def new(%{menu: menu, routes: routes}) do
+    builder(menu, routes, Map.new())
   end
 
   defp builder(
@@ -26,8 +30,7 @@ defmodule ExUssd.Display do
            }
          } = menu,
          routes,
-         api_parameters,
-         session_id
+         _api_parameters
        ) do
     %{depth: page} = List.first(routes)
 
