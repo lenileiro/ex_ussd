@@ -132,7 +132,11 @@ defmodule ExUssd.Navigation do
     case error do
       nil ->
         Registry.add(session_id, route)
-        {:ok, current_menu}
+
+        {:ok,
+         Map.merge(current_menu, %{
+           parent: fn -> %{menu | error: {nil, true}} end
+         })}
 
       _ ->
         go_back_menu =
@@ -149,12 +153,7 @@ defmodule ExUssd.Navigation do
     end
   end
 
-  defp get_validation_menu(
-         validation_menu,
-         %{session_id: session_id} = api_parameters,
-         menu,
-         route
-       )
+  defp get_validation_menu(validation_menu, _api_parameters, menu, _route)
        when is_nil(validation_menu) do
     {:error, Map.merge(menu, %{error: {Map.get(menu, :default_error), true}})}
   end

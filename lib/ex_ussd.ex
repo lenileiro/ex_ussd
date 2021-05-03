@@ -18,13 +18,6 @@ defmodule ExUssd do
     end
   end
 
-  defmodule ProductCHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "selected product c")
-    end
-  end
-
   defmodule MyHomeHandler do
     @behaviour ExUssd.Handler
     def callback(menu, _api_parameters) do
@@ -32,21 +25,35 @@ defmodule ExUssd do
     end
   end
 
-  defmodule ProductPriceHandler do
+   defmodule PinHandler do
     @behaviour ExUssd.Handler
     def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Price")
+      menu |> ExUssd.set(title: "Enter your pin number")
     end
   end
 
+   defmodule PinValidateHandler do
+    @behaviour ExUssd.Handler
+    def callback(menu, api_parameters) do
+      case api_parameters.text == "5555" do
+        true ->
+          menu
+          |> ExUssd.set(title: "success, thank you.")
+          |> ExUssd.set(should_close: true)
 
-  product = ExUssd.new(name: "Product C", handler: ProductCHandler)
-   |> ExUssd.add(ExUssd.new(name: "Price", handler: ProductPriceHandler), :single)
+        _ ->
+          menu |> ExUssd.set(error: "Wrong pin number\n")
+      end
+    end
+  end
 
   ExUssd.new(name: "Home", handler: MyHomeHandler)
     |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler), :multi)
     |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler), :multi)
-    |> ExUssd.add(product, :multi)
+    |> ExUssd.add(change_pin, :multi)
+
+  change_pin = ExUssd.new(name: "Change PIN", handler: PinHandler)
+   |> ExUssd.add(ExUssd.new(name: "", handler: PinValidateHandler), :single)
   """
 
   alias __MODULE__
@@ -93,4 +100,5 @@ defmodule ExUssd do
   defdelegate new(opts), to: ExUssd.Op
   defdelegate add(menu, opts, type), to: ExUssd.Op
   defdelegate set(menu, opts), to: ExUssd.Op
+  defdelegate goto(menu, api_parameters), to: ExUssd.Op
 end

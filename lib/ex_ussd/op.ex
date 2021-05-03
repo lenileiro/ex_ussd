@@ -1,7 +1,7 @@
 defmodule ExUssd.Op do
   alias ExUssd.{Utils, Registry, Ops, Display, Route}
 
-  @allowed_fields [:title, :next, :previous, :should_close, :split, :delimiter_style]
+  @allowed_fields [:error, :title, :next, :previous, :should_close, :split, :delimiter_style]
 
   def new(fields) when is_list(fields),
     do: new(Enum.into(fields, %{data: Keyword.get(fields, :data)}))
