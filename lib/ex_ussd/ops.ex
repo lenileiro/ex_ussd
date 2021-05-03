@@ -1,17 +1,13 @@
 defmodule ExUssd.Ops do
-  alias ExUssd.{Registry, Utils, Navigation}
+  alias ExUssd.Navigation
 
-  def circle(
-        [%{depth: 1, value: "555"}] = route,
-        %ExUssd{} = menu,
-        %{session_id: session_id} = api_parameters
-      ) do
+  def circle([%{depth: 1, value: "555"}] = route, %ExUssd{} = menu, api_parameters) do
     head = List.first(route)
     navigate(head, menu, api_parameters)
   end
 
   def circle([head | tail], %ExUssd{} = menu, api_parameters) do
-    navigate(head, menu, api_parameters)
+    navigate(Map.put(head, :loop, true), menu, api_parameters)
     |> case do
       {:ok, current_menu} -> circle(tail, current_menu, api_parameters)
       {:error, current_menu} -> {:ok, current_menu}
@@ -32,7 +28,7 @@ defmodule ExUssd.Ops do
     navigate(route, current_menu, api_parameters)
   end
 
-  def navigate(%{} = route, %ExUssd{} = menu, %{session_id: session_id} = api_parameters) do
+  def navigate(%{} = route, %ExUssd{} = menu, api_parameters) do
     Navigation.navigate(menu, api_parameters, route)
   end
 end

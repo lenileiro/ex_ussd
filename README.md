@@ -46,13 +46,10 @@ Example New USSD API
     end
   end
 
-  ExUssd.new(name: "Home", handler: MyHomeHandler)
-    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler), :multi)
-    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler), :multi)
-    |> ExUssd.add(change_pin, :multi)
-
-  change_pin = ExUssd.new(name: "Change PIN", handler: PinHandler)
-   |> ExUssd.add(ExUssd.new(name: "", handler: PinValidateHandler), :single)
+  ExUssd.new(name: "Home", handler: MyHomeHandler, validate: PinValidateHandler)
+    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+    |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler, validate: PinValidateHandler))
 ```
 
 ## Installation

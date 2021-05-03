@@ -47,13 +47,11 @@ defmodule ExUssd do
     end
   end
 
-  ExUssd.new(name: "Home", handler: MyHomeHandler)
-    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler), :multi)
-    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler), :multi)
-    |> ExUssd.add(change_pin, :multi)
-
-  change_pin = ExUssd.new(name: "Change PIN", handler: PinHandler)
-   |> ExUssd.add(ExUssd.new(name: "", handler: PinValidateHandler), :single)
+  ExUssd.new(name: "Home", handler: MyHomeHandler, validate: PinValidateHandler)
+    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+    |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler, validate: PinValidateHandler))
+   
   """
 
   alias __MODULE__
@@ -72,6 +70,7 @@ defmodule ExUssd do
           delimiter_style: {String.t(), boolean()},
           parent: %__MODULE__{},
           validation_menu: {%__MODULE__{}, boolean()},
+          validate: {nil, boolean()},
           data: map(),
           id: String.t(),
           default_error: String.t()
@@ -93,12 +92,13 @@ defmodule ExUssd do
             delimiter_style: {":", false},
             parent: nil,
             validation_menu: {nil, false},
+            validate: {nil, false},
             data: nil,
             id: nil,
             default_error: "Invalid Choice\n"
 
   defdelegate new(opts), to: ExUssd.Op
-  defdelegate add(menu, opts, type), to: ExUssd.Op
+  defdelegate add(menu, opts), to: ExUssd.Op
   defdelegate set(menu, opts), to: ExUssd.Op
-  defdelegate goto(menu, api_parameters), to: ExUssd.Op
+  defdelegate goto(opts), to: ExUssd.Op
 end

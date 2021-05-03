@@ -47,7 +47,7 @@ defmodule ExUssd.Display do
 
     menus =
       Enum.map(positions, fn x ->
-        case Enum.at(menu_list, elem(x, 0)) do
+        case Enum.at(Enum.reverse(menu_list), elem(x, 0)) do
           nil ->
             nil
 
@@ -89,6 +89,7 @@ defmodule ExUssd.Display do
           "#{error}#{title}\n" <> Enum.join(menus, "\n") <> previous_navigation <> next_navigation
       end
 
-    {:ok, %{menu_string: menu_string, menu: menu}}
+    {should_close, _} = menu.should_close
+    {:ok, %{menu_string: menu_string, should_close: should_close}}
   end
 end

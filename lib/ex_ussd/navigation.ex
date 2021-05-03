@@ -10,7 +10,7 @@ defmodule ExUssd.Navigation do
       ) do
     {menus, _} = menu.menu_list
     {validation_menu, _} = menu.validation_menu
-    execute_navigation(menu, menus, validation_menu, api_parameters, route)
+    execute_navigation(menu, Enum.reverse(menus), validation_menu, api_parameters, route)
   end
 
   defp execute_navigation(
@@ -58,7 +58,14 @@ defmodule ExUssd.Navigation do
     end
   end
 
-  defp next_menu(555, _menus, nil, %{session_id: session_id} = api_parameters, menu, route) do
+  defp next_menu(
+         555,
+         _menus,
+         _validation_menu,
+         %{session_id: session_id} = api_parameters,
+         menu,
+         route
+       ) do
     Registry.set(session_id, route)
     parent_menu = Utils.invoke_callback(menu, api_parameters)
 
@@ -72,7 +79,7 @@ defmodule ExUssd.Navigation do
     get_validation_menu(validation_menu, api_parameters, menu, route)
   end
 
-  defp next_menu(depth, {_, menus}, nil, %{session_id: session_id} = api_parameters, menu, route)
+  defp next_menu(depth, menus, nil, %{session_id: session_id} = api_parameters, menu, route)
        when is_integer(depth) do
     case Enum.at(menus, depth - 1) do
       nil ->
@@ -94,26 +101,25 @@ defmodule ExUssd.Navigation do
     end
   end
 
-  defp next_menu(
-         depth,
-         menus,
-         validation_menu,
-         %{session_id: session_id} = api_parameters,
-         menu,
-         route
-       )
-       when is_integer(depth) do
-    case Enum.at(menus, depth - 1) do
-      nil ->
-        get_validation_menu(validation_menu, api_parameters, menu, route)
+  defp next_menu(depth, menus, _validation_menu, api_parameters, menu, %{value: "555"} = route) do
+    next_menu(depth, menus, nil, api_parameters, menu, route)
+  end
 
-      child_menu ->
-        Registry.add(session_id, route)
+  defp next_menu(depth, menus, validation_menu, api_parameters, menu, route) do
+    case get_validation_menu(validation_menu, api_parameters, menu, route) do
+      {:error, current_menu} ->
+        if Enum.at(menus, depth - 1) == nil do
+          {:error,
+           Map.merge(current_menu, %{
+             error: {Map.get(menu, :default_error), true},
+             parent: fn -> %{menu | error: {nil, true}} end
+           })}
+        else
+          next_menu(depth, menus, nil, api_parameters, menu, route)
+        end
 
-        {:ok,
-         Map.merge(Utils.invoke_callback(child_menu, api_parameters), %{
-           parent: fn -> %{menu | error: {nil, true}} end
-         })}
+      current_menu ->
+        current_menu
     end
   end
 

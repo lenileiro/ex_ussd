@@ -34,8 +34,12 @@ defmodule ExUssd.Route do
 
   defp get_route([""], _service_code, _session_id), do: [%{depth: 1, value: "555"}]
 
-  defp get_route([first | _rest = []], _service_code, _session_id),
-    do: %{depth: 1, value: first}
+  defp get_route([first | _rest = []], _service_code, session_id) do
+    case Registry.lookup(session_id) do
+      {:error, :not_found} -> [%{depth: 1, value: first}, %{depth: 1, value: "555"}]
+      _ -> %{depth: 1, value: first}
+    end
+  end
 
   defp get_route([head | tail] = route, _service_code, session_id) do
     case Registry.lookup(session_id) do
