@@ -7,14 +7,12 @@ defmodule ExUssd.Op do
     do: new(Enum.into(fields, %{data: Keyword.get(fields, :data)}))
 
   def new(%{name: name, handler: handler, data: data}) do
-    menu = %ExUssd{
+    %ExUssd{
       name: name,
       handler: handler,
       id: Utils.generate_id(),
       data: data
     }
-
-    menu
   end
 
   def add(%ExUssd{} = menu, %ExUssd{} = child, :multi) do
@@ -59,7 +57,7 @@ defmodule ExUssd.Op do
       }) do
     api_parameters = for {key, val} <- api_parameters, into: %{}, do: {String.to_atom(key), val}
 
-    route = Route.get_route(%{text: text, service_code: service_code})
+    route = Route.get_route(%{text: text, service_code: service_code, session_id: session_id})
 
     {_, current_menu} =
       case Registry.lookup(session_id) do
