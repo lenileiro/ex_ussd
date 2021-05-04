@@ -6,17 +6,16 @@ defmodule ExUssd.Op do
   def new(fields) when is_list(fields),
     do: new(Enum.into(fields, %{data: Keyword.get(fields, :data)}))
 
-  def new(%{name: name, handler: handler, data: data} = opts) do
+  def new(%{name: name, handler: handler, data: data}) do
     %ExUssd{
       name: name,
       handler: handler,
       id: Utils.generate_id(),
       data: data,
-      validation_menu:
-        case Map.get(opts, :validate) do
-          nil -> {nil, false}
-          _ -> {ExUssd.new(name: "", handler: Map.get(opts, :validate)), false}
-        end
+      validation_menu: {%ExUssd{name: "", handler: handler}, false},
+      init: fn menu, api_parameters ->
+        handler.init(menu, api_parameters)
+      end
     }
   end
 
@@ -59,7 +58,6 @@ defmodule ExUssd.Op do
     {_, current_menu} =
       case Registry.lookup(session_id) do
         {:error, :not_found} ->
-          IO.inspect(route)
           Registry.start(session_id)
           Registry.add(session_id, route)
           current_menu = Ops.circle(Enum.reverse(route), menu, api_parameters)

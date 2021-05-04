@@ -67,7 +67,7 @@ defmodule ExUssd.Navigation do
          route
        ) do
     Registry.set(session_id, route)
-    parent_menu = Utils.invoke_callback(menu, api_parameters)
+    parent_menu = Utils.invoke_init(menu, api_parameters)
 
     {:ok,
      Map.merge(parent_menu, %{
@@ -95,7 +95,7 @@ defmodule ExUssd.Navigation do
         Registry.add(session_id, route)
 
         {:ok,
-         Map.merge(Utils.invoke_callback(child_menu, api_parameters), %{
+         Map.merge(Utils.invoke_init(child_menu, api_parameters), %{
            parent: fn -> %{menu | error: {nil, true}} end
          })}
     end
@@ -133,29 +133,34 @@ defmodule ExUssd.Navigation do
     current_menu =
       Utils.invoke_callback(validation_menu, Map.put(api_parameters, :text, route.value))
 
-    %{error: {error, _}} = current_menu
-
-    case error do
+    case current_menu do
       nil ->
-        Registry.add(session_id, route)
+        {:ok, menu}
+      current_menu ->
+        %{error: {error, _}} = current_menu
 
-        {:ok,
-         Map.merge(current_menu, %{
-           parent: fn -> %{menu | error: {nil, true}} end
-         })}
+        case error do
+          nil ->
+            Registry.add(session_id, route)
 
-      _ ->
-        go_back_menu =
-          case menu.parent do
-            nil -> menu
-            _ -> menu.parent.()
-          end
+            {:ok,
+             Map.merge(current_menu, %{
+               parent: fn -> %{menu | error: {nil, true}} end
+             })}
 
-        {:error,
-         Map.merge(menu, %{
-           error: {error, true},
-           parent: fn -> %{go_back_menu | error: {nil, true}} end
-         })}
+          _ ->
+            go_back_menu =
+              case menu.parent do
+                nil -> menu
+                _ -> menu.parent.()
+              end
+
+            {:error,
+             Map.merge(menu, %{
+               error: {error, true},
+               parent: fn -> %{go_back_menu | error: {nil, true}} end
+             })}
+        end
     end
   end
 

@@ -1,49 +1,51 @@
 defmodule ProductAHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "selected product a")
-    end
+  use ExUssd.Handler
+  def init(menu, _api_parameters) do
+    menu |> ExUssd.set(title: "selected product a")
+  end
+end
+
+defmodule ProductBHandler do
+  use ExUssd.Handler
+  def init(menu, _api_parameters) do
+    menu |> ExUssd.set(title: "selected product b")
+  end
+end
+
+defmodule MyHomeHandler do
+  use ExUssd.Handler
+  def init(menu, _api_parameters) do
+    menu |> ExUssd.set(title: "Welcome")
   end
 
-  defmodule ProductBHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "selected product b")
+  def callback(menu, api_parameters) do
+    case api_parameters.text == "5555" do
+      true ->
+        menu
+        |> ExUssd.set(title: "success, found secret key.")
+        |> ExUssd.set(should_close: true)
+
+      _ ->
+        menu |> ExUssd.set(error: "")
     end
   end
+end
 
-  defmodule ProductCHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "selected product c")
-    end
+ defmodule PinHandler do
+  use ExUssd.Handler
+  def init(menu, _api_parameters) do
+    menu |> ExUssd.set(title: "Enter your pin number")
   end
 
-  defmodule MyHomeHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Welcome")
+  def callback(menu, api_parameters) do
+    case api_parameters.text == "5555" do
+      true ->
+        menu
+        |> ExUssd.set(title: "success, Thank you.")
+        |> ExUssd.set(should_close: true)
+
+      _ ->
+        menu |> ExUssd.set(error: "Wrong pin number\n")
     end
   end
-
-  defmodule PinHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Enter your pin number")
-    end
-  end
-
-   defmodule PinValidateHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, api_parameters) do
-      case api_parameters.text == "5555" do
-        true ->
-          menu
-          |> ExUssd.set(title: "success, thank you.")
-          |> ExUssd.set(should_close: true)
-
-        _ ->
-          menu |> ExUssd.set(error: "Wrong pin number\n")
-      end
-    end
-  end
+end

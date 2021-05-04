@@ -5,40 +5,49 @@ defmodule ExUssd do
   Example
 
   defmodule ProductAHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
       menu |> ExUssd.set(title: "selected product a")
     end
   end
 
   defmodule ProductBHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
       menu |> ExUssd.set(title: "selected product b")
     end
   end
 
   defmodule MyHomeHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
       menu |> ExUssd.set(title: "Welcome")
     end
-  end
 
-   defmodule PinHandler do
-    @behaviour ExUssd.Handler
-    def callback(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Enter your pin number")
-    end
-  end
-
-   defmodule PinValidateHandler do
-    @behaviour ExUssd.Handler
     def callback(menu, api_parameters) do
       case api_parameters.text == "5555" do
         true ->
           menu
-          |> ExUssd.set(title: "success, thank you.")
+          |> ExUssd.set(title: "success, found secret key.")
+          |> ExUssd.set(should_close: true)
+
+        _ ->
+          menu |> ExUssd.set(error: "")
+      end
+    end
+  end
+
+   defmodule PinHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "Enter your pin number")
+    end
+
+    def callback(menu, api_parameters) do
+      case api_parameters.text == "5555" do
+        true ->
+          menu
+          |> ExUssd.set(title: "success, Thank you.")
           |> ExUssd.set(should_close: true)
 
         _ ->
@@ -47,10 +56,10 @@ defmodule ExUssd do
     end
   end
 
-  ExUssd.new(name: "Home", handler: MyHomeHandler, validate: PinValidateHandler)
+  ExUssd.new(name: "Home", handler: MyHomeHandler)
     |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
     |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
-    |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler, validate: PinValidateHandler))
+    |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler))
    
   """
 
@@ -70,10 +79,10 @@ defmodule ExUssd do
           delimiter_style: {String.t(), boolean()},
           parent: %__MODULE__{},
           validation_menu: {%__MODULE__{}, boolean()},
-          validate: {nil, boolean()},
           data: map(),
           id: String.t(),
-          default_error: String.t()
+          default_error: String.t(),
+          init: fun()
         }
 
   # @derive {Inspect, only: [:name, :menu_list, :title]}
@@ -95,6 +104,7 @@ defmodule ExUssd do
             validate: {nil, false},
             data: nil,
             id: nil,
+            init: nil,
             default_error: "Invalid Choice\n"
 
   defdelegate new(opts), to: ExUssd.Op

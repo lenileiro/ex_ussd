@@ -10,10 +10,14 @@ defmodule ExUssd.Utils do
     |> Integer.to_string(36)
   end
 
-  def invoke_callback(
-        %ExUssd{} = menu,
-        api_parameters
-      ) do
-    menu.handler.callback(menu, api_parameters)
+  def invoke_init(menu, api_parameters) do
+    menu.init.(menu, api_parameters)
+  end
+
+  def invoke_callback(%ExUssd{} = menu, api_parameters) do
+    case menu.handler.callback(menu, api_parameters) do
+      {:error, "Not implemented"} -> nil
+      %ExUssd{} = current_menu -> current_menu
+    end
   end
 end
