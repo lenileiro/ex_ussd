@@ -34,23 +34,19 @@ defmodule ExUssd.Handler do
             ) ::
               menu :: menu()
 
-  @callback callback(
-              menu :: menu(),
-              api_parameters :: api_parameters()
-            ) ::
-              menu :: menu()
+  @callback navigation_response(payload :: map()) :: payload :: any()
 
   defmacro __using__([]) do
     quote do
       @behaviour ExUssd.Handler
 
       @impl ExUssd.Handler
-      def callback(menu, api_parameters), do: ExUssd.Handler.get(__MODULE__, menu, api_parameters)
+      def navigation_response(response), do: ExUssd.Handler.navigation_response(response)
       defoverridable ExUssd.Handler
     end
   end
 
-  def callback(_menu, _api_parameters) do
-    {:error, "Not implemented"}
+  def navigation_response(payload) do
+    payload
   end
 end

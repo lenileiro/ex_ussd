@@ -36,6 +36,8 @@ defmodule ExUssd.Navigation do
 
         case current_menu.parent do
           nil ->
+            Utils.navigation_response(menu, {:ok, api_parameters})
+
             {:ok,
              Map.merge(current_menu, %{
                parent: fn -> %{current_menu | error: {nil, true}} end
@@ -76,7 +78,14 @@ defmodule ExUssd.Navigation do
   end
 
   defp next_menu(_depth, [], validation_menu, api_parameters, menu, route) do
-    get_validation_menu(validation_menu, api_parameters, menu, route)
+    current_menu = get_validation_menu(validation_menu, api_parameters, menu, route)
+
+    case current_menu do
+      {:ok, _} -> Utils.navigation_response(menu, {:ok, api_parameters})
+      {:error, _} -> Utils.navigation_response(menu, {:error, api_parameters})
+    end
+
+    current_menu
   end
 
   defp next_menu(depth, menus, nil, %{session_id: session_id} = api_parameters, menu, route)
@@ -84,6 +93,7 @@ defmodule ExUssd.Navigation do
     case Enum.at(menus, depth - 1) do
       nil ->
         parent = if length(Registry.get(session_id)) == 1, do: menu, else: menu.parent.()
+        Utils.navigation_response(menu, {:error, api_parameters})
 
         {:error,
          Map.merge(menu, %{
@@ -93,6 +103,7 @@ defmodule ExUssd.Navigation do
 
       child_menu ->
         Registry.add(session_id, route)
+        Utils.navigation_response(menu, {:ok, api_parameters})
 
         {:ok,
          Map.merge(Utils.invoke_init(child_menu, api_parameters), %{
@@ -109,6 +120,8 @@ defmodule ExUssd.Navigation do
     case get_validation_menu(validation_menu, api_parameters, menu, route) do
       {:error, current_menu} ->
         if Enum.at(menus, depth - 1) == nil do
+          Utils.navigation_response(menu, {:error, api_parameters})
+
           {:error,
            Map.merge(current_menu, %{
              error: {Map.get(menu, :default_error), true},
@@ -128,19 +141,18 @@ defmodule ExUssd.Navigation do
          %{session_id: session_id} = api_parameters,
          menu,
          route
-       )
-       when not is_nil(validation_menu) do
-    current_menu =
-      Utils.invoke_callback(validation_menu, Map.put(api_parameters, :text, route.value))
-
-    case current_menu do
+       ) do
+    Utils.invoke_callback(validation_menu, Map.put(api_parameters, :text, route.value))
+    |> case do
       nil ->
-        {:ok, menu}
-      current_menu ->
-        %{error: {error, _}} = current_menu
+        {:error, Map.merge(menu, %{error: {Map.get(menu, :default_error), true}})}
 
-        case error do
-          nil ->
+      %{error: {error, _}, continue: {continue, _}, title: {title, _}} = current_menu ->
+        cond do
+          error == nil and continue == true and title == nil ->
+            {:error, Map.merge(menu, %{error: {Map.get(menu, :default_error), true}})}
+
+          error == nil and continue == true and title != nil ->
             Registry.add(session_id, route)
 
             {:ok,
@@ -148,7 +160,7 @@ defmodule ExUssd.Navigation do
                parent: fn -> %{menu | error: {nil, true}} end
              })}
 
-          _ ->
+          true ->
             go_back_menu =
               case menu.parent do
                 nil -> menu
@@ -164,15 +176,10 @@ defmodule ExUssd.Navigation do
     end
   end
 
-  defp get_validation_menu(validation_menu, _api_parameters, menu, _route)
-       when is_nil(validation_menu) do
-    {:error, Map.merge(menu, %{error: {Map.get(menu, :default_error), true}})}
-  end
-
   defp to_int({value, ""}, menu, input_value) do
     %{
-      next: {%{input_match: next}, false},
-      previous: {%{input_match: previous}, false}
+      next: {%{input_match: next}, _},
+      previous: {%{input_match: previous}, _}
     } = menu
 
     case input_value do

@@ -11,13 +11,18 @@ defmodule ExUssd.Utils do
   end
 
   def invoke_init(menu, api_parameters) do
-    menu.init.(menu, api_parameters)
+    apply(menu.handler, :init, [menu, api_parameters])
   end
 
   def invoke_callback(%ExUssd{} = menu, api_parameters) do
-    case menu.handler.callback(menu, api_parameters) do
-      {:error, "Not implemented"} -> nil
-      %ExUssd{} = current_menu -> current_menu
+    try do
+      apply(menu.handler, :callback, [menu, api_parameters])
+    rescue
+      _e in UndefinedFunctionError -> nil
     end
+  end
+
+  def navigation_response(menu, payload) do
+    apply(menu.handler, :navigation_response, [payload])
   end
 end

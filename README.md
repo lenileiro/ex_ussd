@@ -3,7 +3,7 @@
 Example New USSD API
 
 ```elixir
-  defmodule ProductAHandler do
+   defmodule ProductAHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
       menu |> ExUssd.set(title: "selected product a")
@@ -17,22 +17,23 @@ Example New USSD API
     end
   end
 
+  defmodule ProductCHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "selected product c")
+      |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+    end
+  end
+
   defmodule MyHomeHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
       menu |> ExUssd.set(title: "Welcome")
     end
 
-    def callback(menu, api_parameters) do
-      case api_parameters.text == "5555" do
-        true ->
-          menu
-          |> ExUssd.set(title: "success, found secret key.")
-          |> ExUssd.set(should_close: true)
-
-        _ ->
-          menu |> ExUssd.set(error: "")
-      end
+    def navigation_response(payload) do
+      IO.inspect payload
     end
   end
 
@@ -48,19 +49,28 @@ Example New USSD API
           menu
           |> ExUssd.set(title: "success, Thank you.")
           |> ExUssd.set(should_close: true)
+          |> ExUssd.set(continue: true)
 
         _ ->
-          menu |> ExUssd.set(error: "Wrong pin number\n")
+          menu 
+          |> ExUssd.set(error: "Wrong pin number\n")
+          |> ExUssd.set(continue: false)
       end
+    end
+    
+    def navigation_response(payload) do
+      IO.inspect payload
     end
   end
 
-  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+  ExUssd.new(name: "Home", handler: MyHomeHandler)
     |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
     |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+    |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
     |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler))
 
-  ExUssd.goto(menu: menu, api_parameters: %{"service_code" => "*544#", "session_id" => "session_01", "text" => "*544#"})
+  ExUssd.goto(menu: menu, api_parameters: 
+  %{"service_code" => "*544#", "session_id" => "session_01", "text" => "*544#"})
 ```
 
 ## Installation

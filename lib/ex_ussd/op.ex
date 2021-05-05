@@ -1,7 +1,17 @@
 defmodule ExUssd.Op do
   alias ExUssd.{Utils, Registry, Ops, Display, Route}
+  require ExUssd.Utils
 
-  @allowed_fields [:error, :title, :next, :previous, :should_close, :split, :delimiter_style]
+  @allowed_fields [
+    :error,
+    :title,
+    :next,
+    :previous,
+    :should_close,
+    :split,
+    :delimiter_style,
+    :continue
+  ]
 
   def new(fields) when is_list(fields),
     do: new(Enum.into(fields, %{data: Keyword.get(fields, :data)}))
@@ -12,10 +22,7 @@ defmodule ExUssd.Op do
       handler: handler,
       id: Utils.generate_id(),
       data: data,
-      validation_menu: {%ExUssd{name: "", handler: handler}, false},
-      init: fn menu, api_parameters ->
-        handler.init(menu, api_parameters)
-      end
+      validation_menu: {%ExUssd{name: "", handler: handler}, false}
     }
   end
 
