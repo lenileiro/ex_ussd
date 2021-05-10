@@ -4,7 +4,7 @@ Example New USSD API
 
 ### Simple USSD menu
 Implement ExUssd `init/2` callback.
-Use `ExUssd.set\2` to set USSD value
+Use `ExUssd.set/2` to set USSD value
 
 @allowed_fields [
     :error,
@@ -67,7 +67,7 @@ Manually close USSD session, Use `ExUssd.end_session/1` it takes the `session_id
 ```
 
 ### USSD Simple List
-Use `ExUssd.add\2` to add to USSD menu list.
+Use `ExUssd.add/2` to add to USSD menu list.
 The USSD menu list is `[]` by default.
 
 ```elixir
@@ -108,7 +108,7 @@ The USSD menu list is `[]` by default.
 ```
 
 ### USSD Nested List
-Use `ExUssd.add\2` to add to USSD menu list on Individual USSD menu.
+Use `ExUssd.add/2` to add to USSD menu list on Individual USSD menu.
 
 ```elixir
   
