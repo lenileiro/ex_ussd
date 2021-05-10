@@ -36,6 +36,17 @@ defmodule ExUssd.Op do
     )
   end
 
+  def navigate(%ExUssd{} = menu, fields) when is_list(fields),
+    do: navigate(menu, Enum.into(fields, %{data: Keyword.get(fields, :data)}))
+
+  def navigate(%ExUssd{} = menu, %{handler: handler, data: data}) do
+    menu
+    |> Map.put(
+      :validation_menu,
+      {%ExUssd{name: "", handler: handler, data: data}, true}
+    )
+  end
+
   def set(%ExUssd{} = menu, fields) do
     if MapSet.subset?(MapSet.new(Keyword.keys(fields)), MapSet.new(@allowed_fields)) do
       menu

@@ -21,7 +21,7 @@ defmodule ExUssd do
   defmodule ProductCHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
-      menu 
+      menu
       |> ExUssd.set(title: "selected product c")
       |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
     end
@@ -53,12 +53,12 @@ defmodule ExUssd do
           |> ExUssd.set(continue: true)
 
         _ ->
-          menu 
+          menu
           |> ExUssd.set(error: "Wrong pin number\n")
           |> ExUssd.set(continue: false)
       end
     end
-    
+
     def navigation_response(payload) do
       IO.inspect payload
     end
@@ -69,7 +69,7 @@ defmodule ExUssd do
     |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
     |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
     |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler))
-   
+
   """
 
   alias __MODULE__
@@ -120,6 +120,7 @@ defmodule ExUssd do
 
   defdelegate new(opts), to: ExUssd.Op
   defdelegate add(menu, opts), to: ExUssd.Op
+  defdelegate navigate(menu, opts), to: ExUssd.Op
   defdelegate set(menu, opts), to: ExUssd.Op
   defdelegate goto(opts), to: ExUssd.Op
 end

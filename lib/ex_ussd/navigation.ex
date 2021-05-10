@@ -147,17 +147,32 @@ defmodule ExUssd.Navigation do
       nil ->
         {:error, Map.merge(menu, %{error: {Map.get(menu, :default_error), true}})}
 
-      %{error: {error, _}, continue: {continue, _}, title: {title, _}} = current_menu ->
+      %{
+        error: {error, _},
+        continue: {continue, _},
+        title: {title, _},
+        validation_menu: {validation_menu, _}
+      } = current_menu ->
         cond do
-          error == nil and continue == true and title == nil ->
+          error == nil and continue == true and title == nil and validation_menu == nil ->
             {:error, Map.merge(menu, %{error: {Map.get(menu, :default_error), true}})}
 
-          error == nil and continue == true and title != nil ->
+          error == nil and continue == true and title != nil and validation_menu == nil ->
             Registry.add(session_id, route)
 
             {:ok,
              Map.merge(current_menu, %{
                parent: fn -> %{menu | error: {nil, true}} end
+             })}
+
+          validation_menu != nil ->
+            next_menu = Utils.invoke_init(validation_menu, api_parameters)
+
+            {:ok,
+             Map.merge(next_menu, %{
+               parent: fn -> %{menu | error: {nil, true}} end,
+               validation_menu:
+                 {%ExUssd{name: "", data: next_menu.data, handler: validation_menu.handler}, true}
              })}
 
           true ->
