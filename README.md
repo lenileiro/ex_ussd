@@ -2,8 +2,76 @@
 
 Example New USSD API
 
+### Simple USSD menu
+Implement ExUssd `init/2` callback.
+Use `ExUssd.set\2` to set USSD value
+
+@allowed_fields [
+    :error,
+    :title,
+    :next,
+    :previous,
+    :should_close,
+    :split,
+    :delimiter_style,
+    :continue
+  ]
+
 ```elixir
-   defmodule ProductAHandler do
+  defmodule MyHomeHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "Welcome")
+    end
+  end
+
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+
+  api_parameters = %{"service_code" => "*544#", "session_id" => "session_01", "text" => ""}
+
+  ExUssd.goto(menu: menu, api_parameters: api_parameters)
+
+  {:ok, %{menu_string: "Welcome", should_close: false}}
+```
+
+### End USSD Session
+
+Manually close USSD session, Use `ExUssd.end_session/1` it takes the `session_id` as params
+
+```elixir
+  defmodule MyHomeHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "Welcome")
+      |> ExUssd.set(should_close: true)
+    end
+  end
+
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+
+  api_parameters = %{"service_code" => "*544#", "session_id" => "session_01", "text" => ""}
+
+  ExUssd.goto(menu: menu, api_parameters: api_parameters)
+    |> case do
+    {:ok, %{menu_string: menu_string, should_close: false}} ->
+      "CON " <> menu_string
+
+    {:ok, %{menu_string: menu_string, should_close: true}} ->
+      # End Session
+      ExUssd.end_session(session_id: "session_01")
+
+      "END " <> menu_string
+    end
+```
+
+### USSD Simple List
+Use `ExUssd.add\2` to add to USSD menu list.
+The USSD menu list is `[]` by default.
+
+```elixir
+  defmodule ProductAHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
       menu |> ExUssd.set(title: "selected product a")
@@ -22,92 +90,196 @@ Example New USSD API
     def init(menu, _api_parameters) do
       menu 
       |> ExUssd.set(title: "selected product c")
+    end
+  end
+  
+  defmodule MyHomeHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "Welcome")
       |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
+    end
+  end
+
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+```
+
+### USSD Nested List
+Use `ExUssd.add\2` to add to USSD menu list on Individual USSD menu.
+
+```elixir
+  
+  defmodule ProductCHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "selected product c")
+    end
+  end
+  
+  defmodule ProductBHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "selected product b")
+      |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
+    end
+  end
+
+  defmodule ProductAHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "selected product a")
+      |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
     end
   end
 
   defmodule MyHomeHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Welcome")
+      menu 
+      |> ExUssd.set(title: "Welcome")
+      |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))    
+    end
+  end
+
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+```
+
+### USSD navigation response
+Implement `navigation_response/1` function on your USSD handler module.
+`navigation_response/1` callback returns navigation status.
+
+#### Scenario  
+User passes in invalid
+ - payload {:error, api_parameters}
+
+User passes in valid input, name navigated to next menu
+ - payload {:ok, api_parameters}
+
+```elixir
+  # ...
+  defmodule MyHomeHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "Welcome")
+      |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
     end
 
     def navigation_response(payload) do
       IO.inspect payload
     end
   end
+  
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+```
 
+### Using USSD `callback/2`
+Implement ExUssd `callback/2` in the event you need to validate the Users input 
 
-   defmodule PinHandler do
+#### Simple validation menu
+
+```elixir
+  # ...
+  defmodule MyHomeHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Enter your pin number")
+      menu 
+      |> ExUssd.set(title: "Welcome")
+      |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
     end
 
     def callback(menu, api_parameters) do
       case api_parameters.text == "5555" do
         true ->
           menu
-          |> ExUssd.set(title: "success, Thank you.")
+          |> ExUssd.set(title: "You have Entered the Secret Number, 5555")
           |> ExUssd.set(should_close: true)
           |> ExUssd.set(continue: true)
 
+        _ ->
+          menu 
+          |> ExUssd.set(continue: false)
+      end
+    end
+  end
+
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+
+  api_parameters = %{"service_code" => "*544#", "session_id" => "session_01", "text" => "5555"}
+
+  ExUssd.goto(menu: menu, api_parameters: api_parameters)
+
+  {:ok, %{menu_string: "You have Entered the Secret Number, 5555", should_close: false}}
+```
+
+#### Nested validation menu
+
+```elixir
+  # ...
+  defmodule MyHomeHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "Welcome")
+      |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
+      |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
+    end
+
+    def callback(menu, api_parameters) do
+      case api_parameters.text == "5555" do
+        true ->
+          menu
+          |> ExUssd.set(title: "You have Entered the Secret Number, 5555")
+          |> ExUssd.set(should_close: true)
+          |> ExUssd.set(continue: true)
+
+        _ ->
+          menu 
+          |> ExUssd.set(continue: false)
+      end
+    end
+  end
+
+  defmodule PinHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu |> ExUssd.set(title: "Enter your pin number")
+    end
+
+    def callback(menu, api_parameters) do
+      case api_parameters.text == "4321" do
+        true ->
+          menu
+          |> ExUssd.navigate(handler: MyHomeHandler)
+          |> ExUssd.set(continue: true)
         _ ->
           menu 
           |> ExUssd.set(error: "Wrong pin number\n")
           |> ExUssd.set(continue: false)
       end
     end
-    
+
     def navigation_response(payload) do
       IO.inspect payload
     end
   end
 
-  defmodule LastNameHandler do
-    use ExUssd.Handler
-    def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Enter your Last Name")
-    end
-
-    def callback(%{data: data} = menu, %{text: text} = _api_parameters) do
-        %{first_name: first_name} = data
-
-        IO.inspect("Last Name: #{text}")
-
-        menu
-        |> ExUssd.set(title: "Your First Name: #{first_name}, Last Name: #{text}")
-        |> ExUssd.set(continue: true)
-        |> ExUssd.set(should_close: true)
-    end
-  end
-
-  defmodule FirstNameHandler do
-    use ExUssd.Handler
-    def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Enter your First Name")
-    end
-
-    def callback(menu, %{text: text} = _api_parameters) do
-
-        IO.inspect("First Name: #{text}")
-
-        menu
-        |> ExUssd.set(continue: true)
-        |> ExUssd.navigate(data: %{first_name: text}, handler: LastNameHandler)
-    end
-  end
-
-  ExUssd.new(name: "Home", handler: MyHomeHandler)
-    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
-    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
-    |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
-    |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler))
-    |> ExUssd.add(ExUssd.new(name: "Add Name", handler: FirstNameHandler))
-
-  ExUssd.goto(menu: menu, api_parameters: 
-  %{"service_code" => "*544#", "session_id" => "session_01", "text" => "*544#"})
+  menu = ExUssd.new(name: "Check PIN", handler: PinHandler)
+  # ...
 ```
+
+
 
 ## Installation
 

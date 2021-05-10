@@ -7,7 +7,7 @@ defmodule ExUssd.Ops do
   end
 
   def circle([head | tail], %ExUssd{} = menu, api_parameters) do
-    navigate(Map.put(head, :loop, true), menu, api_parameters)
+    navigate(head, menu, api_parameters)
     |> case do
       {:ok, current_menu} -> circle(tail, current_menu, api_parameters)
       {:error, current_menu} -> {:ok, current_menu}

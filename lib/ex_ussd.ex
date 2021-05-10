@@ -1,77 +1,4 @@
 defmodule ExUssd do
-  @moduledoc """
-  Documentation for `ExUssd`.
-
-  Example
-
-  defmodule ProductAHandler do
-    use ExUssd.Handler
-    def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "selected product a")
-    end
-  end
-
-  defmodule ProductBHandler do
-    use ExUssd.Handler
-    def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "selected product b")
-    end
-  end
-
-  defmodule ProductCHandler do
-    use ExUssd.Handler
-    def init(menu, _api_parameters) do
-      menu
-      |> ExUssd.set(title: "selected product c")
-      |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
-    end
-  end
-
-  defmodule MyHomeHandler do
-    use ExUssd.Handler
-    def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Welcome")
-    end
-
-    def navigation_response(payload) do
-      IO.inspect payload
-    end
-  end
-
-   defmodule PinHandler do
-    use ExUssd.Handler
-    def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Enter your pin number")
-    end
-
-    def callback(menu, api_parameters) do
-      case api_parameters.text == "5555" do
-        true ->
-          menu
-          |> ExUssd.set(title: "success, Thank you.")
-          |> ExUssd.set(should_close: true)
-          |> ExUssd.set(continue: true)
-
-        _ ->
-          menu
-          |> ExUssd.set(error: "Wrong pin number\n")
-          |> ExUssd.set(continue: false)
-      end
-    end
-
-    def navigation_response(payload) do
-      IO.inspect payload
-    end
-  end
-
-  ExUssd.new(name: "Home", handler: MyHomeHandler)
-    |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
-    |> ExUssd.add(ExUssd.new(name: "Product B", handler: ProductBHandler))
-    |> ExUssd.add(ExUssd.new(name: "Product C", handler: ProductCHandler))
-    |> ExUssd.add(ExUssd.new(name: "Change PIN", handler: PinHandler))
-
-  """
-
   alias __MODULE__
 
   @type t :: %__MODULE__{
@@ -95,7 +22,7 @@ defmodule ExUssd do
           continue: {boolean(), boolean()}
         }
 
-  # @derive {Inspect, only: [:name, :menu_list, :title]}
+  @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
   defstruct name: nil,
             handler: nil,
             title: {nil, false},
@@ -123,4 +50,5 @@ defmodule ExUssd do
   defdelegate navigate(menu, opts), to: ExUssd.Op
   defdelegate set(menu, opts), to: ExUssd.Op
   defdelegate goto(opts), to: ExUssd.Op
+  defdelegate end_session(opts), to: ExUssd.Op
 end

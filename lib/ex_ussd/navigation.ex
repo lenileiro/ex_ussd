@@ -166,13 +166,12 @@ defmodule ExUssd.Navigation do
              })}
 
           validation_menu != nil ->
-            next_menu = Utils.invoke_init(validation_menu, api_parameters)
-
             {:ok,
-             Map.merge(next_menu, %{
+             Map.merge(Utils.invoke_init(validation_menu, api_parameters), %{
                parent: fn -> %{menu | error: {nil, true}} end,
                validation_menu:
-                 {%ExUssd{name: "", data: next_menu.data, handler: validation_menu.handler}, true}
+                 {%ExUssd{name: "", data: validation_menu.data, handler: validation_menu.handler},
+                  true}
              })}
 
           true ->
