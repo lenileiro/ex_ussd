@@ -10,7 +10,9 @@ defmodule ExUssd.Op do
     :should_close,
     :split,
     :delimiter_style,
-    :continue
+    :continue,
+    :default_error,
+    :show_navigation
   ]
 
   def new(fields) when is_list(fields),

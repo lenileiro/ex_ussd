@@ -16,20 +16,21 @@ defmodule ExUssd.Display do
 
   defp builder(
          %ExUssd{
-           delimiter_style: {delimiter_style, _},
+           delimiter: {delimiter_style, _},
            error: {error, _},
            menu_list: {menu_list, _},
-           next: {%{display_style: next_display_style, input_match: next, name: next_name}, _},
+           next: {%{delimiter: next_display_style, next: next, name: next_name}, _},
            previous:
              {%{
-                display_style: previous_display_style,
-                input_match: previous,
+                delimiter: previous_display_style,
+                previous: previous,
                 name: previous_name
               }, _},
            should_close: {should_close, _},
            split: {split, _},
            success: {false, _},
-           title: {title, _}
+           title: {title, _},
+           show_navigation: {show_navigation, _}
          } = menu,
          routes,
          _api_parameters
@@ -81,11 +82,14 @@ defmodule ExUssd.Display do
       end
 
     menu_string =
-      case menus do
-        [] ->
+      cond do
+        menus == [] and show_navigation == true ->
           "#{error}#{title}" <> previous_navigation <> next_navigation
 
-        _ ->
+        menus == [] and show_navigation == false ->
+          "#{error}#{title}"
+
+        menus != [] ->
           "#{error}#{title}\n" <> Enum.join(menus, "\n") <> previous_navigation <> next_navigation
       end
 

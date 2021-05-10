@@ -6,16 +6,20 @@ Example New USSD API
 Implement ExUssd `init/2` callback.
 Use `ExUssd.set/2` to set USSD value
 
+```elixir
 @allowed_fields [
-    :error,
-    :title,
-    :next,
-    :previous,
-    :should_close,
-    :split,
-    :delimiter_style,
-    :continue
+    :error, # -> Custom error message, Used in the `callback/2`
+    :title, # -> USSD menu title
+    :next, # -> %{name: "MORE", next: "98", delimiter: ":"}
+    :previous, # -> %{name: "BACK", previous: "0", delimiter: ":"}
+    :should_close, # -> Indicate Menu state, default `false`
+    :split, # -> Set split menu list by,  default 7
+    :delimiter, # -> Set delimiter style,  ":"
+    :continue, # -> Navigation state, Used in the `callback/2`
+    :default_error, # -> Set default error message, "Invalid Choice\n", Used in the `init/2`
+    :show_navigation # Show navigation, default `true`  
   ]
+```
 
 ```elixir
   defmodule MyHomeHandler do
@@ -254,7 +258,10 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
   defmodule PinHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
-      menu |> ExUssd.set(title: "Enter your pin number")
+      menu 
+      |> ExUssd.set(title: "Enter your pin number")
+      |> ExUssd.set(show_navigation: false)
+      
     end
 
     def callback(menu, api_parameters) do

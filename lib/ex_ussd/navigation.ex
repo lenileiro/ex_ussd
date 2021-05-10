@@ -167,12 +167,19 @@ defmodule ExUssd.Navigation do
 
           validation_menu != nil ->
             {:ok,
-             Map.merge(Utils.invoke_init(validation_menu, api_parameters), %{
-               parent: fn -> %{menu | error: {nil, true}} end,
-               validation_menu:
-                 {%ExUssd{name: "", data: validation_menu.data, handler: validation_menu.handler},
-                  true}
-             })}
+             Map.merge(
+               Utils.invoke_init(validation_menu, api_parameters),
+               %{
+                 parent: fn -> %{menu | error: {nil, true}} end,
+                 validation_menu:
+                   {%ExUssd{
+                      name: "",
+                      data: validation_menu.data,
+                      handler: validation_menu.handler
+                    }, true},
+                 show_navigation: {false, true}
+               }
+             )}
 
           true ->
             go_back_menu =
@@ -192,8 +199,8 @@ defmodule ExUssd.Navigation do
 
   defp to_int({value, ""}, menu, input_value) do
     %{
-      next: {%{input_match: next}, _},
-      previous: {%{input_match: previous}, _}
+      next: {%{next: next}, _},
+      previous: {%{previous: previous}, _}
     } = menu
 
     case input_value do

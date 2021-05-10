@@ -12,14 +12,14 @@ defmodule ExUssd do
           previous: {map(), boolean()},
           split: {integer(), boolean()},
           should_close: {boolean(), boolean()},
-          delimiter_style: {String.t(), boolean()},
+          delimiter: {String.t(), boolean()},
           parent: %__MODULE__{},
           validation_menu: {%__MODULE__{}, boolean()},
           data: map(),
           id: String.t(),
           default_error: String.t(),
-          init: fun(),
-          continue: {boolean(), boolean()}
+          continue: {boolean(), boolean()},
+          show_navigation: {boolean(), boolean()}
         }
 
   @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
@@ -31,14 +31,13 @@ defmodule ExUssd do
             handle: {false, false},
             success: {false, false},
             show_navigation: {true, false},
-            next: {%{name: "MORE", input_match: "98", display_style: ":"}, false},
-            previous: {%{name: "BACK", input_match: "0", display_style: ":"}, false},
+            next: {%{name: "MORE", next: "98", delimiter_style: ":"}, false},
+            previous: {%{name: "BACK", previous: "0", delimiter_style: ":"}, false},
             split: {7, false},
             should_close: {false, false},
-            delimiter_style: {":", false},
+            delimiter: {":", false},
             parent: nil,
             validation_menu: {nil, false},
-            validate: {nil, false},
             data: nil,
             id: nil,
             init: nil,
