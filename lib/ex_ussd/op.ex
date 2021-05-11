@@ -33,8 +33,7 @@ defmodule ExUssd.Op do
     new(%{name: name, handler: nil, data: data})
   end
 
-  @spec add(ExUssd.t(), ExUssd.t()) :: ExUssd.t()
-  def add(%ExUssd{} = menu, %ExUssd{} = child) do
+  def add(%ExUssd{orientation: :horizontal} = menu, %ExUssd{} = child) do
     {menu_list, _state} = Map.get(menu, :menu_list, {[], true})
 
     menu
@@ -44,20 +43,45 @@ defmodule ExUssd.Op do
     )
   end
 
-  def dynamic(%ExUssd{} = menu, fields) when is_list(fields),
-    do: dynamic(menu, Enum.into(fields, %{}))
+  def add(%ExUssd{orientation: :vertical}, _child) do
+    raise RuntimeError,
+      message:
+        "current Menu uses dymanic menu with a :vertical orientation,\ndrop `ExUssd.dynamic(menus: menus, orientation: :vertical)` from pipeline"
+  end
 
-  def dynamic(menu, %{menus: menus, handler: handler, orientation: :horizontal}) do
+  def dynamic(%ExUssd{} = menu, fields) when is_list(fields),
+    do: dynamic(menu, Enum.into(fields, %{data: Keyword.get(fields, :data)}))
+
+  def dynamic(menu, %{menus: menus, handler: handler, data: data, orientation: :horizontal}) do
     menu_list =
       Enum.map(menus, fn menu ->
-        Map.merge(menu, %{handler: handler})
+        Map.merge(menu, %{handler: handler, data: data})
       end)
 
     Map.merge(menu, %{menu_list: {Enum.reverse(menu_list), true}})
   end
 
-  def dynamic(menu, %{menus: menus, orientation: :vertical}) do
-    Map.merge(menu, %{menu_list: {menus, true}, orientation: :vertical})
+  def dynamic(%ExUssd{menu_list: {[], _}}, %{
+        menus: _menus,
+        orientation: :vertical,
+        handler: _handler
+      }) do
+    raise RuntimeError,
+      message: "Handler is not required"
+  end
+
+  def dynamic(%ExUssd{menu_list: {[], _}} = menu, %{
+        menus: menus,
+        data: data,
+        orientation: :vertical
+      }) do
+    Map.merge(menu, %{menu_list: {menus, true}, data: data, orientation: :vertical})
+  end
+
+  def dynamic(_menu, %{menus: _menus, orientation: :vertical}) do
+    raise RuntimeError,
+      message:
+        "current Menu contains menu lists elements,\n drop `ExUssd.add/2` or `ExUssd.dynamic(menus: menus, handler: handler, orientation: :horizontal)` from pipeline"
   end
 
   def navigate(%ExUssd{} = menu, fields) when is_list(fields),
