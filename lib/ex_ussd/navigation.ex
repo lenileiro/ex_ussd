@@ -55,6 +55,9 @@ defmodule ExUssd.Navigation do
         Registry.set(session_id, %{depth: 1, value: "555"})
         Registry.get_home(session_id)
 
+      436_739_010_658_356_127_157_159_114_145 ->
+        {:ok, menu}
+
       depth ->
         Registry.depth(session_id, depth)
         {:ok, menu}
