@@ -10,6 +10,44 @@ defmodule ExUssd.Utils do
     |> Integer.to_string(36)
   end
 
+  def truncate(text, options \\ []) do
+    len = options[:length] || 30
+    omi = options[:omission] || "..."
+
+    cond do
+      !String.valid?(text) ->
+        text
+
+      String.length(text) < len ->
+        text
+
+      true ->
+        len_with_omi = len - String.length(omi)
+
+        stop =
+          if options[:separator] do
+            rindex(text, options[:separator], len_with_omi) || len_with_omi
+          else
+            len_with_omi
+          end
+
+        "#{String.slice(text, 0, stop)}#{omi}"
+    end
+  end
+
+  defp rindex(text, str, _offset) do
+    revesed = text |> String.reverse()
+    matchword = String.reverse(str)
+
+    case :binary.match(revesed, matchword) do
+      {at, strlen} ->
+        String.length(text) - at - strlen
+
+      :nomatch ->
+        nil
+    end
+  end
+
   def invoke_init(menu, api_parameters) do
     apply(menu.handler, :init, [menu, api_parameters])
   end

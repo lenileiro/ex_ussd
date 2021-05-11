@@ -28,6 +28,12 @@ defmodule ExUssd.Op do
     }
   end
 
+  def new(%{name: name, data: data}) do
+    name = Utils.truncate(name, length: 140, omission: "...")
+    new(%{name: name, handler: nil, data: data})
+  end
+
+  @spec add(ExUssd.t(), ExUssd.t()) :: ExUssd.t()
   def add(%ExUssd{} = menu, %ExUssd{} = child) do
     {menu_list, _state} = Map.get(menu, :menu_list, {[], true})
 
@@ -36,6 +42,22 @@ defmodule ExUssd.Op do
       :menu_list,
       {[child | menu_list], true}
     )
+  end
+
+  def dynamic(%ExUssd{} = menu, fields) when is_list(fields),
+    do: dynamic(menu, Enum.into(fields, %{}))
+
+  def dynamic(menu, %{menus: menus, handler: handler, orientation: :horizontal}) do
+    menu_list =
+      Enum.map(menus, fn menu ->
+        Map.merge(menu, %{handler: handler})
+      end)
+
+    Map.merge(menu, %{menu_list: {Enum.reverse(menu_list), true}})
+  end
+
+  def dynamic(menu, %{menus: menus, orientation: :vertical}) do
+    Map.merge(menu, %{menu_list: {menus, true}, orientation: :vertical})
   end
 
   def navigate(%ExUssd{} = menu, fields) when is_list(fields),

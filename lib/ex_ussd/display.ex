@@ -1,4 +1,6 @@
 defmodule ExUssd.Display do
+  alias ExUssd.Registry
+
   def new(fields) when is_list(fields),
     do: new(Enum.into(fields, %{}))
 
@@ -16,6 +18,54 @@ defmodule ExUssd.Display do
 
   defp builder(
          %ExUssd{
+           orientation: :vertical,
+           menu_list: {menu_list, _},
+           default_error: default_error,
+           next: {%{delimiter: next_display_style, next: next, name: next_name}, _},
+           previous:
+             {%{
+                delimiter: previous_display_style,
+                previous: previous,
+                name: previous_name
+              }, _}
+         } = menu,
+         routes,
+         %{session_id: session_id} = _api_parameters
+       ) do
+    %{depth: depth} = List.first(routes)
+    total_length = length(menu_list)
+
+    previous_navigation = "#{previous}#{previous_display_style}#{previous_name}"
+    next_navigation = "#{next}#{next_display_style}#{next_name}"
+
+    menu =
+      cond do
+        depth > total_length ->
+          Registry.depth(session_id, total_length + 1)
+          menu_string = default_error <> previous_navigation
+          %{menu_string: menu_string, should_close: false}
+
+        depth < total_length ->
+          %{name: name} = Enum.at(menu_list, depth - 1)
+
+          menu_string =
+            "#{depth}/#{total_length}\n#{name}\n#{previous_navigation} #{next_navigation}"
+
+          %{menu_string: menu_string, should_close: false}
+
+        depth == total_length ->
+          %{name: name} = Enum.at(menu_list, depth - 1)
+          menu_string = "#{depth}/#{total_length}\n#{name}\n#{previous_navigation}"
+          {should_close, _} = menu.should_close
+          %{menu_string: menu_string, should_close: should_close}
+      end
+
+    {:ok, menu}
+  end
+
+  defp builder(
+         %ExUssd{
+           orientation: :horizontal,
            delimiter: {delimiter_style, _},
            error: {error, _},
            menu_list: {menu_list, _},
@@ -27,10 +77,9 @@ defmodule ExUssd.Display do
                 name: previous_name
               }, _},
            should_close: {should_close, _},
+           show_navigation: {show_navigation, _},
            split: {split, _},
-           success: {false, _},
-           title: {title, _},
-           show_navigation: {show_navigation, _}
+           title: {title, _}
          } = menu,
          routes,
          _api_parameters

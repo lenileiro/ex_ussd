@@ -154,7 +154,7 @@ Use `ExUssd.add/2` to add to USSD menu list on Individual USSD menu.
   menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
 ```
 
-### USSD navigation response
+### Using USSD `navigation_response/1`
 Implement `navigation_response/1` function on your USSD handler module.
 `navigation_response/1` callback returns navigation status.
 
@@ -232,7 +232,8 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
   # ...
   defmodule MyHomeHandler do
     use ExUssd.Handler
-    def init(menu, _api_parameters) do
+    def init(%{data: data} = menu, _api_parameters) do
+      IO.inspect data
       menu 
       |> ExUssd.set(title: "Welcome")
       |> ExUssd.add(ExUssd.new(name: "Product A", handler: ProductAHandler))
@@ -261,13 +262,13 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
       menu 
       |> ExUssd.set(title: "Enter your pin number")
       |> ExUssd.set(show_navigation: false)
-      
     end
 
     def callback(menu, api_parameters) do
       case api_parameters.text == "4321" do
         true ->
           menu
+          # |> ExUssd.navigate(data: %{name: "John"}, handler: MyHomeHandler)
           |> ExUssd.navigate(handler: MyHomeHandler)
           |> ExUssd.set(continue: true)
         _ ->
@@ -285,7 +286,113 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
   menu = ExUssd.new(name: "Check PIN", handler: PinHandler)
   # ...
 ```
+### Using USSD `dynamic`
 
+#### Dymanic Horizonal menus
+
+```elixir
+  # ...
+  defmodule SubCountyHandler do
+    use ExUssd.Handler
+    def init(%{data: %{name: name}} = menu, api_parameters) do
+      # TODO: Fetch county sub locations by county_code
+      # Make dynamic location menus for the country
+      # Split by 6 / 7
+      menu 
+      |> ExUssd.set(title: "#{name} County")
+    end
+  end
+
+  defmodule CountyHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menus = [
+        ExUssd.new(name: "Nairobi", data: %{county_code: 47, name: "Nairobi"}),
+        ExUssd.new(name: "Mombasa", data: %{county_code: 01, name: "Mombasa"}),
+        ExUssd.new(name: "Kisumu", data: %{county_code: 42, name: "Kisumu"})
+      ]
+
+      menu 
+      |> ExUssd.set(title: "List of Counties")
+      |> ExUssd.dynamic(menus: menus, handler: SubCountyHandler, orientation: :horizontal)
+    end
+  end
+
+  defmodule MyHomeHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "Welcome")
+      |> ExUssd.add(ExUssd.new(name: "Counties List", handler: CountyHandler))
+    end
+  end
+
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+  # ...
+  {:ok, %{
+   menu_string: "List of Counties\n1:Nairobi\n2:Mombasa\n3:Kisumu\n0:BACK",
+   should_close: false
+ }}
+```
+
+#### Dymanic Vertical menus
+Note: The name value is Truncated after 140 characters
+
+```elixir
+
+  defmodule NewsHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menus = fetch_api |> Enum.map(fn %{"title": title, "body": body} -> 
+           ExUssd.new(name: title <> "\n" <> body)
+      end)
+
+      menu 
+      |> ExUssd.set(title: "World News")
+      |> ExUssd.dynamic(menus: menus, orientation: :vertical)
+    end
+
+    def fetch_api do
+    [
+      %{
+        "userId": 1,
+        "id": 1,
+        "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+        "body": "quia et suscipit suscipit recusandae consequuntur expedita et cum reprehenderit molestiae ut ut quas totam nostrum rerum est autem sunt rem eveniet architecto"
+      },
+      %{
+        "userId": 1,
+        "id": 2,
+        "title": "qui est esse",
+        "body": "est rerum tempore vitae sequi sint nihil reprehenderit dolor beatae ea dolores neque fugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis qui aperiam non debitis possimus qui neque nisi nulla"
+      },
+      %{
+        "userId": 1,
+        "id": 3,
+        "title": "ea molestias quasi exercitationem repellat qui ipsa sit aut",
+        "body": "et iusto sed quo iure voluptatem occaecati omnis eligendi aut ad voluptatem doloribus vel accusantium quis pariatur molestiae porro eius odio et labore et velit aut"
+      }]
+    end
+  end
+
+  defmodule MyHomeHandler do
+    use ExUssd.Handler
+    def init(menu, _api_parameters) do
+      menu 
+      |> ExUssd.set(title: "BBC News")
+      |> ExUssd.add(ExUssd.new(name: "News", handler: NewsHandler))
+      # |> ExUssd.add(ExUssd.new(name: "WorkLife", handler: WorkLifeHandler))
+      # |> ExUssd.add(ExUssd.new(name: "Sports", handler: SportsHandler))
+    end
+  end
+
+  menu = ExUssd.new(name: "Home", handler: MyHomeHandler)
+  # ...
+  {:ok, %{
+   menu_string: "1/3\nsunt aut facere repellat provident occaecati excepturi optio reprehenderit\nquia et suscipit suscipit recusandae consequuntur expedita et ...\n0:BACK 98:MORE",
+   should_close: false
+ }}
+``` 
 
 
 ## Installation

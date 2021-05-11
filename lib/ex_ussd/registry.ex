@@ -30,6 +30,7 @@ defmodule ExUssd.Registry do
   def get_current(session), do: GenServer.call(via_tuple(session), {:get_current})
   def get_home(session), do: GenServer.call(via_tuple(session), {:get_home})
 
+  def depth(session, depth), do: GenServer.call(via_tuple(session), {:depth, depth})
   def add(session, route), do: GenServer.call(via_tuple(session), {:add, route})
   def set(session, route), do: GenServer.call(via_tuple(session), {:set, route})
 
@@ -59,6 +60,14 @@ defmodule ExUssd.Registry do
     [head | tail] = routes
     depth = head[:depth]
     new_head = Map.put(head, :depth, depth + 1)
+    new_state = Map.put(state, :routes, [new_head | tail])
+    {:reply, [new_head | tail], new_state}
+  end
+
+  def handle_call({:depth, depth}, _from, state) do
+    %{routes: routes} = state
+    [head | tail] = routes
+    new_head = Map.put(head, :depth, depth)
     new_state = Map.put(state, :routes, [new_head | tail])
     {:reply, [new_head | tail], new_state}
   end

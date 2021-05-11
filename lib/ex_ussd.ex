@@ -22,7 +22,7 @@ defmodule ExUssd do
           show_navigation: {boolean(), boolean()}
         }
 
-  @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
+  # @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
   defstruct name: nil,
             handler: nil,
             title: {nil, false},
@@ -31,8 +31,8 @@ defmodule ExUssd do
             handle: {false, false},
             success: {false, false},
             show_navigation: {true, false},
-            next: {%{name: "MORE", next: "98", delimiter_style: ":"}, false},
-            previous: {%{name: "BACK", previous: "0", delimiter_style: ":"}, false},
+            next: {%{name: "MORE", next: "98", delimiter: ":"}, false},
+            previous: {%{name: "BACK", previous: "0", delimiter: ":"}, false},
             split: {7, false},
             should_close: {false, false},
             delimiter: {":", false},
@@ -42,6 +42,7 @@ defmodule ExUssd do
             id: nil,
             init: nil,
             continue: {nil, false},
+            orientation: :horizontal,
             default_error: "Invalid Choice\n"
 
   defdelegate new(opts), to: ExUssd.Op
@@ -50,4 +51,5 @@ defmodule ExUssd do
   defdelegate set(menu, opts), to: ExUssd.Op
   defdelegate goto(opts), to: ExUssd.Op
   defdelegate end_session(opts), to: ExUssd.Op
+  defdelegate dynamic(menu, opts), to: ExUssd.Op
 end
