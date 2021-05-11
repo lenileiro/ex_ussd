@@ -50,12 +50,12 @@ defmodule ExUssd.Op do
   end
 
   def dynamic(%ExUssd{} = menu, fields) when is_list(fields),
-    do: dynamic(menu, Enum.into(fields, %{data: Keyword.get(fields, :data)}))
+    do: dynamic(menu, Enum.into(fields, %{}))
 
-  def dynamic(menu, %{menus: menus, handler: handler, data: data, orientation: :horizontal}) do
+  def dynamic(menu, %{menus: menus, handler: handler, orientation: :horizontal}) do
     menu_list =
       Enum.map(menus, fn menu ->
-        Map.merge(menu, %{handler: handler, data: data})
+        Map.merge(menu, %{handler: handler})
       end)
 
     Map.merge(menu, %{menu_list: {Enum.reverse(menu_list), true}})
