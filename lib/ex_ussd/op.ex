@@ -46,7 +46,7 @@ defmodule ExUssd.Op do
   def add(%ExUssd{orientation: :vertical}, _child) do
     raise RuntimeError,
       message:
-        "To use dymanic menu with a :vertical orientation,\ndrop `ExUssd.dynamic(menus: menus, orientation: :vertical)` from pipeline"
+        "To use `ExUssd.add/2`,\ndrop `ExUssd.dynamic/2` with `orientation: :vertical` from pipeline"
   end
 
   def dynamic(%ExUssd{} = menu, fields) when is_list(fields),
@@ -81,7 +81,7 @@ defmodule ExUssd.Op do
   def dynamic(_menu, %{menus: _menus, orientation: :vertical}) do
     raise RuntimeError,
       message:
-        "To use dymanic menu with a :vertical orientation,\n drop `ExUssd.add/2` or `ExUssd.dynamic(menus: menus, handler: handler, orientation: :horizontal)` from pipeline"
+        "To use `ExUssd.dynamic/2` with `orientation: :vertical` opt,\n drop `ExUssd.add/2` or `ExUssd.dynamic/2` with `orientation: :horizontal` from pipeline"
   end
 
   def navigate(%ExUssd{} = menu, fields) when is_list(fields),
