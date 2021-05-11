@@ -296,7 +296,7 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
     use ExUssd.Handler
     def init(%{data: %{name: name}} = menu, api_parameters) do
       # TODO: Fetch county sub locations by county_code
-      # Make dynamic location menus for the country
+      # Make dynamic location menus for the county
       # Split by 6 / 7
       menu 
       |> ExUssd.set(title: "#{name} County")
