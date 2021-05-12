@@ -52,13 +52,23 @@ defmodule ExUssd.Op do
   def dynamic(%ExUssd{} = menu, fields) when is_list(fields),
     do: dynamic(menu, Enum.into(fields, %{}))
 
-  def dynamic(menu, %{menus: menus, handler: handler, orientation: :horizontal}) do
+  def dynamic(menu, %{menus: menus, handler: handler, orientation: :horizontal})
+      when menus != [] do
     menu_list =
       Enum.map(menus, fn menu ->
         Map.merge(menu, %{handler: handler})
       end)
 
     Map.merge(menu, %{menu_list: {Enum.reverse(menu_list), true}})
+  end
+
+  def dynamic(_menu, %{
+        menus: menus,
+        orientation: :horizontal
+      })
+      when menus != [] do
+    raise RuntimeError,
+      message: "Handler is required for `ExUssd.dynamic/2` with `orientation: :horizontal` opt"
   end
 
   def dynamic(%ExUssd{menu_list: {[], _}}, %{
@@ -74,14 +84,24 @@ defmodule ExUssd.Op do
         menus: menus,
         data: data,
         orientation: :vertical
-      }) do
+      })
+      when menus != [] do
     Map.merge(menu, %{menu_list: {menus, true}, data: data, orientation: :vertical})
   end
 
-  def dynamic(_menu, %{menus: _menus, orientation: :vertical}) do
+  def dynamic(_menu, %{menus: menus, orientation: :vertical}) when menus != [] do
     raise RuntimeError,
       message:
-        "To use `ExUssd.dynamic/2` with `orientation: :vertical` opt,\n drop `ExUssd.add/2` or `ExUssd.dynamic/2` with `orientation: :horizontal` from pipeline"
+        "To use `ExUssd.dynamic/2` with `orientation: :vertical` opt,\ndrop `ExUssd.add/2` or `ExUssd.dynamic/2` with `orientation: :horizontal` from pipeline"
+  end
+
+  def dynamic(_menu, %{
+        menus: menus,
+        orientation: :horizontal
+      })
+      when menus == [] do
+    raise RuntimeError,
+      message: "Menus list is required"
   end
 
   def navigate(%ExUssd{} = menu, fields) when is_list(fields),

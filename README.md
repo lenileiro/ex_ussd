@@ -343,7 +343,7 @@ Note: The name value is Truncated after 140 characters
   defmodule NewsHandler do
     use ExUssd.Handler
     def init(menu, _api_parameters) do
-      menus = fetch_api |> Enum.map(fn %{"title": title, "body": body} -> 
+      menus = fetch_api() |> Enum.map(fn %{"title": title, "body": body} -> 
            ExUssd.new(name: title <> "\n" <> body)
       end)
 
