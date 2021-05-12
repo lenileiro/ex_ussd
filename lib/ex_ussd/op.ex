@@ -84,12 +84,11 @@ defmodule ExUssd.Op do
         menus: menus,
         data: data,
         orientation: :vertical
-      })
-      when menus != [] do
+      }) do
     Map.merge(menu, %{menu_list: {menus, true}, data: data, orientation: :vertical})
   end
 
-  def dynamic(_menu, %{menus: menus, orientation: :vertical}) when menus != [] do
+  def dynamic(_menu, %{menus: _menus, orientation: :vertical}) do
     raise RuntimeError,
       message:
         "To use `ExUssd.dynamic/2` with `orientation: :vertical` opt,\ndrop `ExUssd.add/2` or `ExUssd.dynamic/2` with `orientation: :horizontal` from pipeline"
@@ -97,7 +96,7 @@ defmodule ExUssd.Op do
 
   def dynamic(_menu, %{
         menus: menus,
-        orientation: :horizontal
+        orientation: _
       })
       when menus == [] do
     raise RuntimeError,

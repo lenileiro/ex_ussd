@@ -2,7 +2,7 @@ defmodule App.NestedCallback.PinHandler do
   use ExUssd.Handler
   def init(menu, _api_parameters) do
     menu
-    |> ExUssd.set(title: "Enter your pin number")
+    |> ExUssd.set(title: "Enter your pin number\nhint: 4321")
     |> ExUssd.set(show_navigation: false)
   end
 

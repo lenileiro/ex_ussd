@@ -2,6 +2,7 @@ defmodule App.Dymanic.Horizontal.SubCountyHandler do
   use ExUssd.Handler
   def init(%{data: %{name: name}}= menu, _api_parameters) do
     # TODO: Fetch county sub locations by county_code
+
     # Make dynamic location menus for the county
     # Split by 6 / 7
     menu
