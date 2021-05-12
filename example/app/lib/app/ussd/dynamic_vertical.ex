@@ -38,7 +38,7 @@ defmodule App.Dymanic.Vertical.MyHomeHandler do
   def init(menu, _api_parameters) do
     menu
     |> ExUssd.set(title: "Dymanic Vertical: BBC News")
-    |> ExUssd.add(ExUssd.new(name: "News", handler: NewsHandler))
+    |> ExUssd.add(ExUssd.new(name: "News", handler: App.Dymanic.Vertical.NewsHandler))
     # |> ExUssd.add(ExUssd.new(name: "WorkLife", handler: WorkLifeHandler))
     # |> ExUssd.add(ExUssd.new(name: "Sports", handler: SportsHandler))
   end
