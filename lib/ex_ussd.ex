@@ -52,4 +52,37 @@ defmodule ExUssd do
   defdelegate goto(opts), to: ExUssd.Op
   defdelegate end_session(opts), to: ExUssd.Op
   defdelegate dynamic(menu, opts), to: ExUssd.Op
+
+  # use Phoenix.Router
+  # use Agent
+
+  # def start_link(opts) do
+  #   name =
+  #     opts[:name] ||
+  #       raise ArgumentError, "the :name option is required by #{inspect(__MODULE__)}"
+
+  #   metrics =
+  #     opts[:metrics] ||
+  #       raise ArgumentError, "the :metrics option is required by #{inspect(__MODULE__)}"
+
+  #   Agent.start_link(fn -> %{metrics: metrics} end, name: name)
+  # end
+
+  # def init(opts) do
+  #   _name =
+  #     opts[:name] ||
+  #       raise ArgumentError, "the :name option is a required by #{inspect(__MODULE__)}.init/1"
+  #   opts
+  # end
+  # def call(conn, opts) do
+  #   conn
+  #   |> put_layout({Phoenix.LiveDashboard.LayoutView, :dash})
+  #   |> put_private(:phoenix_live_dashboard,
+  #     router: Phoenix.Controller.router_module(conn),
+  #     session: %{"name" => opts[:name]}
+  #   )
+  #   |> super(opts)
+  # end
+
+  # get("/", Phoenix.ExUssd.Plug, LiveDashboard.TelemetryLive)
 end
