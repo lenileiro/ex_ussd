@@ -53,36 +53,49 @@ defmodule ExUssd do
   defdelegate end_session(opts), to: ExUssd.Op
   defdelegate dynamic(menu, opts), to: ExUssd.Op
 
-  # use Phoenix.Router
-  # use Agent
+  @doc """
+    defmodule MyAppWeb.Router do
+      use Phoenix.Router
+      import ExUssd.Router
 
-  # def start_link(opts) do
-  #   name =
-  #     opts[:name] ||
-  #       raise ArgumentError, "the :name option is required by #{inspect(__MODULE__)}"
+      scope "/", MyAppWeb do
+        pipe_through [:browser]
+        simulate "/dashboard",
+          contacts: []
+      end
+    end
+  """
+  defmacro simulate(path, opts \\ []) do
+    quote bind_quoted: binding() do
+      scope path, alias: false, as: false do
+        import Phoenix.LiveView.Router, only: [live: 4]
+        opts = ExUssd.__options__(opts)
 
-  #   metrics =
-  #     opts[:metrics] ||
-  #       raise ArgumentError, "the :metrics option is required by #{inspect(__MODULE__)}"
+        # All helpers are public contracts and cannot be changed
+        live "/", Phoenix.ExUssd.PageLive, :home, opts
+      end
+    end
+  end
 
-  #   Agent.start_link(fn -> %{metrics: metrics} end, name: name)
-  # end
+  def __options__(options) do
+    live_socket_path = Keyword.get(options, :live_socket_path, "/live")
 
-  # def init(opts) do
-  #   _name =
-  #     opts[:name] ||
-  #       raise ArgumentError, "the :name option is a required by #{inspect(__MODULE__)}.init/1"
-  #   opts
-  # end
-  # def call(conn, opts) do
-  #   conn
-  #   |> put_layout({Phoenix.LiveDashboard.LayoutView, :dash})
-  #   |> put_private(:phoenix_live_dashboard,
-  #     router: Phoenix.Controller.router_module(conn),
-  #     session: %{"name" => opts[:name]}
-  #   )
-  #   |> super(opts)
-  # end
+    contacts =
+      case options[:contacts] do
+        nil ->
+          %{contacts: nil}
+        contacts -> %{contacts: contacts}
+      end
+    session_args = [contacts]
 
-  # get("/", Phoenix.ExUssd.Plug, LiveDashboard.TelemetryLive)
+    [
+      session: {__MODULE__, :__session__, session_args},
+      private: %{live_socket_path: live_socket_path},
+      layout: {Phoenix.ExUssd.LayoutView, :sim},
+      as: :ex_ussd
+    ]
+  end
+  def __session__(_conn, _opts) do
+    %{}
+  end
 end

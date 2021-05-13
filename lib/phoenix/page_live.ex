@@ -1,5 +1,5 @@
 defmodule Phoenix.ExUssd.PageLive do
-  use Phoenix.LiveDashboard.Web, :live_view
+  use Phoenix.ExUssd.Web, :live_view
 
   def render(assigns) do
     ~L"""

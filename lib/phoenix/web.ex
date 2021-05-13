@@ -1,4 +1,4 @@
-defmodule Phoenix.LiveDashboard.Web do
+defmodule Phoenix.ExUssd.Web do
   @moduledoc false
 
   @doc false
