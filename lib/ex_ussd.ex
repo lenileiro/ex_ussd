@@ -22,7 +22,7 @@ defmodule ExUssd do
           show_navigation: {boolean(), boolean()}
         }
 
-  # @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
+  @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
   defstruct name: nil,
             handler: nil,
             title: {nil, false},
@@ -56,11 +56,11 @@ defmodule ExUssd do
   @doc """
     defmodule MyAppWeb.Router do
       use Phoenix.Router
-      import ExUssd.Router
+      import ExUssd
 
       scope "/", MyAppWeb do
         pipe_through [:browser]
-        simulate "/dashboard",
+        simulate "/simulator",
           contacts: []
       end
     end
@@ -72,7 +72,7 @@ defmodule ExUssd do
         opts = ExUssd.__options__(opts)
 
         # All helpers are public contracts and cannot be changed
-        live "/", Phoenix.ExUssd.PageLive, :home, opts
+        live("/", Phoenix.ExUssd.PageLive, :home, opts)
       end
     end
   end
@@ -84,8 +84,11 @@ defmodule ExUssd do
       case options[:contacts] do
         nil ->
           %{contacts: nil}
-        contacts -> %{contacts: contacts}
+
+        contacts ->
+          %{contacts: contacts}
       end
+
     session_args = [contacts]
 
     [
@@ -95,6 +98,7 @@ defmodule ExUssd do
       as: :ex_ussd
     ]
   end
+
   def __session__(_conn, _opts) do
     %{}
   end

@@ -39,9 +39,6 @@ defmodule Phoenix.ExUssd.Web do
 
       # Import convenience functions for LiveView rendering
       import Phoenix.LiveView.Helpers
-
-      # # Import dashboard built-in functions
-      # import Phoenix.LiveDashboard.Helpers
     end
   end
 
