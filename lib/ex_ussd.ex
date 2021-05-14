@@ -42,7 +42,7 @@ defmodule ExUssd do
             id: nil,
             init: nil,
             continue: {nil, false},
-            orientation: :horizontal,
+            orientation: :vertical,
             default_error: "Invalid Choice\n"
 
   defdelegate new(opts), to: ExUssd.Op

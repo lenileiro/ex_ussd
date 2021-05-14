@@ -288,7 +288,7 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
 ```
 ### Using USSD `dynamic`
 
-#### Dymanic Horizonal menus
+#### Dymanic Vertical menus
 
 ```elixir
   # ...
@@ -314,7 +314,7 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
 
       menu 
       |> ExUssd.set(title: "List of Counties")
-      |> ExUssd.dynamic(menus: menus, handler: SubCountyHandler, orientation: :horizontal)
+      |> ExUssd.dynamic(menus: menus, handler: SubCountyHandler, orientation: :vertical)
     end
   end
 
@@ -335,7 +335,7 @@ Implement ExUssd `callback/2` in the event you need to validate the Users input
  }}
 ```
 
-#### Dymanic Vertical menus
+#### Dymanic Horizontal menus
 Note: The name value is Truncated after 140 characters
 
 ```elixir
@@ -349,7 +349,7 @@ Note: The name value is Truncated after 140 characters
 
       menu 
       |> ExUssd.set(title: "World News")
-      |> ExUssd.dynamic(menus: menus, orientation: :vertical)
+      |> ExUssd.dynamic(menus: menus, orientation: :horizontal)
     end
 
     def fetch_api do

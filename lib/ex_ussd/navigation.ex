@@ -14,7 +14,7 @@ defmodule ExUssd.Navigation do
   end
 
   defp execute_navigation(
-         %ExUssd{orientation: :vertical} = menu,
+         %ExUssd{orientation: :horizontal} = menu,
          _menus,
          _validation_menu,
          %{session_id: session_id} = api_parameters,
@@ -65,7 +65,7 @@ defmodule ExUssd.Navigation do
   end
 
   defp execute_navigation(
-         %ExUssd{orientation: :horizontal} = menu,
+         %ExUssd{orientation: :vertical} = menu,
          menus,
          validation_menu,
          %{session_id: session_id} = api_parameters,

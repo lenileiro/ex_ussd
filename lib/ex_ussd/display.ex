@@ -18,7 +18,7 @@ defmodule ExUssd.Display do
 
   defp builder(
          %ExUssd{
-           orientation: :vertical,
+           orientation: :horizontal,
            menu_list: {menu_list, _},
            default_error: default_error,
            next: {%{delimiter: next_display_style, next: next, name: next_name}, _},
@@ -65,7 +65,7 @@ defmodule ExUssd.Display do
 
   defp builder(
          %ExUssd{
-           orientation: :horizontal,
+           orientation: :vertical,
            delimiter: {delimiter_style, _},
            error: {error, _},
            menu_list: {menu_list, _},
