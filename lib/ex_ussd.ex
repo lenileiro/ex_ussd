@@ -22,7 +22,7 @@ defmodule ExUssd do
           show_navigation: {boolean(), boolean()}
         }
 
-  # @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
+  @derive {Inspect, only: [:name, :menu_list, :title, :validation_menu]}
   defstruct name: nil,
             handler: nil,
             title: {nil, false},
@@ -52,4 +52,54 @@ defmodule ExUssd do
   defdelegate goto(opts), to: ExUssd.Op
   defdelegate end_session(opts), to: ExUssd.Op
   defdelegate dynamic(menu, opts), to: ExUssd.Op
+
+  @doc """
+    defmodule MyAppWeb.Router do
+      use Phoenix.Router
+      import ExUssd
+
+      scope "/", MyAppWeb do
+        pipe_through [:browser]
+        simulate "/simulator",
+          contacts: []
+      end
+    end
+  """
+  defmacro simulate(path, opts \\ []) do
+    quote bind_quoted: binding() do
+      scope path, alias: false, as: false do
+        import Phoenix.LiveView.Router, only: [live: 4]
+        opts = ExUssd.__options__(opts)
+
+        # All helpers are public contracts and cannot be changed
+        live("/", Phoenix.ExUssd.PageLive, :home, opts)
+      end
+    end
+  end
+
+  def __options__(options) do
+    live_socket_path = Keyword.get(options, :live_socket_path, "/live")
+
+    contacts =
+      case options[:contacts] do
+        nil ->
+          %{contacts: nil}
+
+        contacts ->
+          %{contacts: contacts}
+      end
+
+    session_args = [contacts]
+
+    [
+      session: {__MODULE__, :__session__, session_args},
+      private: %{live_socket_path: live_socket_path},
+      layout: {Phoenix.ExUssd.LayoutView, :sim},
+      as: :ex_ussd
+    ]
+  end
+
+  def __session__(_conn, _opts) do
+    %{}
+  end
 end
