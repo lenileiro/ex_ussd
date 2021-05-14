@@ -9,7 +9,7 @@
     <style><%= raw(render("app.css")) %></style>
   </head>
   <body>
-    <div class="d-flex flex-column align-items-stretch layout-wrapper">
+    <div class="bg-gray-800">
       <div class="flex-grow-1">
         <%= @inner_content %>
       </div>
