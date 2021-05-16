@@ -17,7 +17,7 @@ defmodule ExUssd.Navigation do
          %ExUssd{orientation: :horizontal} = menu,
          _menus,
          _validation_menu,
-         %{session_id: session_id} = api_parameters,
+         %{session_id: session_id},
          route
        ) do
     depth = to_int(Integer.parse(route[:value]), menu, route[:value])
@@ -36,8 +36,6 @@ defmodule ExUssd.Navigation do
 
         case current_menu.parent do
           nil ->
-            Utils.navigation_response(menu, {:ok, api_parameters})
-
             {:ok,
              Map.merge(current_menu, %{
                parent: fn -> %{current_menu | error: {nil, true}} end
@@ -84,10 +82,10 @@ defmodule ExUssd.Navigation do
             _ -> {:ok, menu}
           end
 
+        Utils.navigation_response(menu, {:ok, api_parameters})
+
         case current_menu.parent do
           nil ->
-            Utils.navigation_response(menu, {:ok, api_parameters})
-
             {:ok,
              Map.merge(current_menu, %{
                parent: fn -> %{current_menu | error: {nil, true}} end
@@ -98,10 +96,12 @@ defmodule ExUssd.Navigation do
         end
 
       605_356_150_351_840_375_921_999_017_933 ->
+        Utils.navigation_response(menu, {:ok, api_parameters})
         Registry.next(session_id)
         Registry.get_current(session_id)
 
       705_897_792_423_629_962_208_442_626_284 ->
+        Utils.navigation_response(menu, {:ok, api_parameters})
         Registry.set(session_id, %{depth: 1, value: "555"})
         Registry.get_home(session_id)
 
