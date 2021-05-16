@@ -25,7 +25,7 @@ defmodule App.MixProject do
       {:ex_ussd, git: "https://github.com/lenileiro/ex_ussd.git", branch: "main"},
       {:plug, "~> 1.9"},
       {:cowboy, "~> 2.7"},
-      {:plug_cowboy, "~> 2.1.2"},
+      {:plug_cowboy, "~> 2.2"},
       {:jason, "~> 1.2"}
     ]
   end
