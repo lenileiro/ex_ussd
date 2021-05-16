@@ -76,7 +76,6 @@ defmodule ExUssd.Navigation do
     case depth do
       128_977_754_852_657_127_041_634_246_588 ->
         %{depth: depth} = Registry.previous(session_id) |> List.first()
-
         {_, menu} = Registry.get_current(session_id)
 
         {_, current_menu} =
@@ -175,8 +174,7 @@ defmodule ExUssd.Navigation do
 
           {:error,
            Map.merge(current_menu, %{
-             error: {Map.get(menu, :default_error), true},
-             parent: fn -> %{menu | error: {nil, true}} end
+             error: {Map.get(menu, :default_error), true}
            })}
         else
           next_menu(depth, menus, nil, api_parameters, menu, route)
