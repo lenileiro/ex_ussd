@@ -172,10 +172,7 @@ defmodule ExUssd.Navigation do
         if Enum.at(menus, depth - 1) == nil do
           Utils.navigation_response(menu, {:error, api_parameters})
 
-          {:error,
-           Map.merge(current_menu, %{
-             error: {Map.get(menu, :default_error), true}
-           })}
+          {:error, Map.merge(current_menu, %{error: {Map.get(menu, :default_error), true}})}
         else
           next_menu(depth, menus, nil, api_parameters, menu, route)
         end
