@@ -138,8 +138,11 @@ defmodule ExUssd.Display do
         menus == [] and show_navigation == false ->
           "#{error}#{title}"
 
-        menus != [] ->
+        menus != [] and show_navigation == true ->
           "#{error}#{title}\n" <> Enum.join(menus, "\n") <> previous_navigation <> next_navigation
+
+        menus != [] and show_navigation == false ->
+          "#{error}#{title}\n" <> Enum.join(menus, "\n")
       end
 
     {should_close, _} = menu.should_close
