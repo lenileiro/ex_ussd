@@ -140,7 +140,15 @@ defmodule ExUssd.Op do
             api_parameters,
         menu: menu
       }) do
-    api_parameters = for {key, val} <- api_parameters, into: %{}, do: {String.to_atom(key), val}
+    api_parameters =
+      for {key, val} <- api_parameters, into: %{} do
+        try do
+          {String.to_existing_atom(key), val}
+        rescue
+          _e in ArgumentError ->
+            {String.to_atom(key), val}
+        end
+      end
 
     route = Route.get_route(%{text: text, service_code: service_code, session_id: session_id})
 
