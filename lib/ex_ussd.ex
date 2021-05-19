@@ -80,13 +80,13 @@ defmodule ExUssd do
   def __options__(options) do
     live_socket_path = Keyword.get(options, :live_socket_path, "/live")
 
-    contacts =
-      case options[:contacts] do
+    phone_numbers =
+      case options[:phone_numbers] do
         nil ->
-          %{contacts: nil}
+          %{phone_numbers: []}
 
-        contacts ->
-          %{contacts: contacts}
+        phone_numbers ->
+          %{phone_numbers: phone_numbers}
       end
 
     menu =
@@ -98,7 +98,7 @@ defmodule ExUssd do
           %{menu: menu}
       end
 
-    session_args = [contacts, menu]
+    session_args = [phone_numbers, menu]
 
     [
       session: {__MODULE__, :__session__, session_args},
@@ -108,10 +108,7 @@ defmodule ExUssd do
     ]
   end
 
-  def __session__(_conn, opt1, opt2) do
-    menu = Map.get(opt1, :menu, Map.get(opt2, :menu))
-    phone_numbers = Map.get(opt1, :phone_numbers, Map.get(opt2, :phone_numbers))
-
+  def __session__(_conn, %{phone_numbers: phone_numbers}, %{menu: menu}) do
     %{"phone_numbers" => phone_numbers, "menu" => menu}
   end
 end

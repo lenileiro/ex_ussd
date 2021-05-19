@@ -4,10 +4,14 @@ defmodule Phoenix.ExUssd.PageLive do
   @impl true
   def render(assigns) do
     ~L"""
-    <button phx-click="start" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-    start session
-    </button>
-    <h5><%= @menu_string %></h5>
+    <div>
+      <button phx-click="start" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      start session
+      </button>
+      <div class="mt-2 text-xl font-normal emphasis-high h-1">
+        <%= Phoenix.HTML.Format.text_to_html(@menu_string) %>
+      </div>
+    </div>
     """
   end
 
