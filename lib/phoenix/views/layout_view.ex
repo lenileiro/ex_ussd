@@ -2,8 +2,8 @@ defmodule Phoenix.ExUssd.LayoutView do
   @moduledoc false
   use Phoenix.ExUssd.Web, :view
 
-  js_path = Path.join(__DIR__, "../../priv/static/js/app.js")
-  css_path = Path.join(__DIR__, "../../priv/static/css/app.css")
+  js_path = Path.join(__DIR__, "../../../priv/static/js/app.js")
+  css_path = Path.join(__DIR__, "../../../priv/static/css/app.css")
 
   @external_resource js_path
   @external_resource css_path

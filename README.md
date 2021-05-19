@@ -393,7 +393,25 @@ Note: The name value is Truncated after 140 characters
    should_close: false
  }}
 ``` 
+## Phoenix Simulator
+Update your router's configuration to forward requests to ExUssd Simlutate with a `menu` entry and `phone_numbers` list
 
+```elixir
+# lib/my_app_web/router.ex
+use MyAppWeb, :router
+
+import ExUssd
+...
+
+if Mix.env() == :dev do
+  scope "/" do
+    pipe_through :browser
+    simulate "/simulator",
+      menu: ExUssd.new(name: "Home", handler: MyHomeHandler),
+      phone_numbers: ["254700100100", "254700200200", "254700300300"]
+  end
+end
+```
 
 ## Installation
 

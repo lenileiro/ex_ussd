@@ -61,7 +61,8 @@ defmodule ExUssd do
       scope "/", MyAppWeb do
         pipe_through [:browser]
         simulate "/simulator",
-          contacts: []
+          menu: ExUssd.new(name: "Home", handler: MyHomeHandler),
+          phone_numbers: ["254700100100", "254700200200", "254700300300"]
       end
     end
   """
@@ -70,7 +71,6 @@ defmodule ExUssd do
       scope path, alias: false, as: false do
         import Phoenix.LiveView.Router, only: [live: 4]
         opts = ExUssd.__options__(opts)
-
         # All helpers are public contracts and cannot be changed
         live("/", Phoenix.ExUssd.PageLive, :home, opts)
       end
@@ -89,17 +89,29 @@ defmodule ExUssd do
           %{contacts: contacts}
       end
 
-    session_args = [contacts]
+    menu =
+      case options[:menu] do
+        nil ->
+          %{menu: nil}
+
+        menu ->
+          %{menu: menu}
+      end
+
+    session_args = [contacts, menu]
 
     [
       session: {__MODULE__, :__session__, session_args},
       private: %{live_socket_path: live_socket_path},
-      layout: {Phoenix.ExUssd.LayoutView, :sim},
+      layout: {Phoenix.ExUssd.LayoutView, :root},
       as: :ex_ussd
     ]
   end
 
-  def __session__(_conn, _opts) do
-    %{}
+  def __session__(_conn, opt1, opt2) do
+    menu = Map.get(opt1, :menu, Map.get(opt2, :menu))
+    phone_numbers = Map.get(opt1, :phone_numbers, Map.get(opt2, :phone_numbers))
+
+    %{"phone_numbers" => phone_numbers, "menu" => menu}
   end
 end
