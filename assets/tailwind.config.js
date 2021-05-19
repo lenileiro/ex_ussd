@@ -1,6 +1,5 @@
 module.exports = {
   purge: {
-    enabled: true,
     content: [
       '../lib/phoenix/*.ex',
       '../lib/phoenix/**/*.ex',
